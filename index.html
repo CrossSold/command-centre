@@ -1,1 +1,1354 @@
-<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=https://cc.sashacross.pro"></head><body><a href="https://cc.sashacross.pro">CC Loading...</a></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>CC — Command Centre v6</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#05050a;--bg2:#0c0c14;--bg3:#13131e;--bg4:#1a1a28;
+  --gold:#c4973e;--gold-light:#e8c97a;--gold-dim:rgba(196,151,62,0.18);
+  --gold-border:rgba(196,151,62,0.22);
+  --text:#f0f0e8;--text-dim:#888880;--text-muted:#555550;
+  --red:#e54545;--amber:#e09a3a;--blue:#4a9eda;--green:#4caf50;
+  --red-dim:rgba(229,69,69,0.12);--amber-dim:rgba(224,154,58,0.12);--blue-dim:rgba(74,158,218,0.12);
+  --font-display:'Cormorant Garamond',serif;
+  --font-body:'Montserrat',sans-serif;
+  --radius:10px;--shadow:0 4px 24px rgba(0,0,0,0.5);
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font-body);overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 10px;border-bottom:1px solid var(--gold-border);background:var(--bg2);position:relative;z-index:10;flex-shrink:0}
+.header-left h1{font-family:var(--font-display);font-size:22px;font-weight:500;color:var(--gold-light);letter-spacing:1px}
+.header-left .tagline{font-size:9px;color:var(--text-muted);letter-spacing:3px;text-transform:uppercase;margin-top:1px}
+.clock{font-family:var(--font-display);font-size:15px;color:var(--gold);text-align:right}
+.clock.date{font-size:9px;color:var(--text-muted);letter-spacing:1px;margin-top:1px;text-align:right}
+.ai-btn{background:linear-gradient(135deg,var(--gold),#a07830);border:none;color:#fff;padding:8px 14px;border-radius:20px;font-family:var(--font-body);font-size:11px;font-weight:500;cursor:pointer;letter-spacing:0.5px;white-space:nowrap;box-shadow:0 2px 12px rgba(196,151,62,0.3);transition:all 0.2s}
+.ai-btn:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(196,151,62,0.4)}
+.v-badge{font-size:8px;background:var(--gold-dim);color:var(--gold);padding:2px 6px;border-radius:8px;border:1px solid var(--gold-border);margin-left:8px;letter-spacing:1px}
+
+/* TABS */
+.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--gold-border);overflow-x:auto;scrollbar-width:none;flex-shrink:0}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;padding:10px 16px;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab:hover:not(.active){color:var(--text-dim)}
+.tab.new-tab{position:relative}
+.tab.new-tab::after{content:'NEW';font-size:7px;background:var(--gold);color:#000;border-radius:4px;padding:1px 4px;position:absolute;top:4px;right:2px;letter-spacing:0}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:0;position:relative}
+.content::-webkit-scrollbar{width:4px}
+.content::-webkit-scrollbar-track{background:var(--bg)}
+.content::-webkit-scrollbar-thumb{background:var(--gold-dim);border-radius:2px}
+.panel{display:none;padding:16px 16px 80px;animation:fadeIn 0.2s ease}
+.panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* SECTION LABELS */
+.section-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin:20px 0 10px;opacity:0.7}
+.section-label:first-child{margin-top:4px}
+
+/* CARDS */
+.card{background:var(--bg3);border:1px solid var(--gold-border);border-radius:var(--radius);padding:14px;margin-bottom:10px;transition:border-color 0.2s}
+.card:hover{border-color:rgba(196,151,62,0.4)}
+
+/* VISION BAR */
+.vision-bar{display:flex;align-items:center;background:var(--bg3);border:1px solid var(--gold-border);border-radius:8px;overflow:hidden;margin-bottom:16px}
+.vision-step{flex:1;text-align:center;padding:8px 4px;font-size:9px;letter-spacing:0.5px;color:var(--text-muted);border-right:1px solid var(--gold-border)}
+.vision-step:last-child{border-right:none}
+.vision-step.active{color:var(--gold);background:var(--gold-dim)}
+
+/* ACTIONS */
+.action-item{display:flex;align-items:flex-start;gap:12px;background:var(--bg3);border-radius:8px;padding:12px 14px;margin-bottom:8px;border-left:3px solid transparent;transition:all 0.2s}
+.action-item.red{border-left-color:var(--red);background:rgba(229,69,69,0.05)}
+.action-item.amber{border-left-color:var(--amber);background:rgba(224,154,58,0.05)}
+.action-item.blue{border-left-color:var(--blue);background:rgba(74,158,218,0.05)}
+.action-item.done{opacity:0.35}
+.action-item.done .action-text{text-decoration:line-through}
+.action-check{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--text-muted);cursor:pointer;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+.action-check.checked{background:var(--green);border-color:var(--green);color:#fff}
+.action-text{font-size:13px;flex:1;line-height:1.5}
+.action-del{color:var(--text-muted);cursor:pointer;font-size:16px;flex-shrink:0;margin-top:-1px;opacity:0.5;transition:opacity 0.2s}
+.action-del:hover{opacity:1;color:var(--red)}
+.add-action{display:flex;gap:8px;margin-top:12px}
+.add-input{flex:1;background:var(--bg3);border:1px solid var(--gold-border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none}
+.add-input::placeholder{color:var(--text-muted)}
+.add-input:focus{border-color:var(--gold)}
+.add-btn{background:var(--gold-dim);border:1px solid var(--gold-border);color:var(--gold);padding:10px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;transition:all 0.2s}
+.add-btn:hover{background:rgba(196,151,62,0.25)}
+.urgency-sel{background:var(--bg3);border:1px solid var(--gold-border);color:var(--text-dim);padding:10px 8px;border-radius:8px;font-family:var(--font-body);font-size:12px;outline:none}
+
+/* TIMELINE */
+.timeline-wrap{overflow-x:auto;padding:20px 0;scrollbar-width:none}
+.timeline-wrap::-webkit-scrollbar{display:none}
+.timeline-track{display:flex;align-items:flex-start;min-width:max-content;padding:0 16px}
+.timeline-item{display:flex;flex-direction:column;align-items:center;position:relative;min-width:120px}
+.timeline-line{position:absolute;top:22px;left:50%;right:-50%;height:2px;background:var(--gold-border);z-index:0}
+.timeline-item:last-child .timeline-line{display:none}
+.timeline-dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--gold);background:var(--bg);z-index:1;position:relative;cursor:pointer;transition:all 0.2s;flex-shrink:0}
+.timeline-dot.done{background:var(--green);border-color:var(--green)}
+.timeline-dot.upcoming{background:var(--bg);border-color:var(--gold)}
+.timeline-dot.tentative{background:var(--bg);border-color:var(--amber)}
+.timeline-dot.future{background:var(--bg);border-color:var(--text-muted)}
+.timeline-dot:hover{transform:scale(1.2)}
+.timeline-date{font-size:10px;color:var(--gold);margin-bottom:8px;letter-spacing:0.5px;font-weight:500}
+.timeline-label{text-align:center;margin-top:10px;max-width:110px}
+.timeline-event-name{font-size:11px;font-weight:500;color:var(--text);line-height:1.4}
+.timeline-tooltip{position:absolute;top:36px;left:50%;transform:translateX(-50%);background:var(--bg4);border:1px solid var(--gold-border);border-radius:8px;padding:10px 14px;width:200px;z-index:100;font-size:11px;line-height:1.6;color:var(--text-dim);display:none;pointer-events:none;box-shadow:var(--shadow)}
+.timeline-item:hover .timeline-tooltip{display:block}
+
+/* SAMMAP */
+.sammap-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.filter-btn{padding:5px 12px;border-radius:20px;font-size:10px;font-weight:500;letter-spacing:0.5px;cursor:pointer;border:1px solid;transition:all 0.2s}
+.filter-btn.all{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+.filter-btn.medical{border-color:#e8585a;color:#e8585a;background:rgba(232,88,90,0.1)}
+.filter-btn.therapy{border-color:#9b59b6;color:#9b59b6;background:rgba(155,89,182,0.1)}
+.filter-btn.beauty{border-color:#e91e8c;color:#e91e8c;background:rgba(233,30,140,0.1)}
+.filter-btn.wellness{border-color:var(--green);color:var(--green);background:rgba(76,175,80,0.1)}
+.filter-btn.admin{border-color:var(--blue);color:var(--blue);background:rgba(74,158,218,0.1)}
+.filter-btn.inactive{opacity:0.35}
+.sammap-svg-wrap{width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.sammap-svg-wrap svg{max-width:100%;height:auto}
+.provider-node{cursor:pointer;transition:all 0.15s}
+.provider-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg4);border:1px solid var(--gold-border);border-radius:12px;padding:18px 20px;min-width:240px;max-width:90vw;z-index:1000;box-shadow:var(--shadow);display:none}
+.provider-popup.show{display:block}
+.provider-popup h3{font-family:var(--font-display);font-size:18px;color:var(--gold-light);margin-bottom:4px}
+.provider-popup .role{font-size:11px;color:var(--text-muted);margin-bottom:10px}
+.provider-popup .detail{font-size:12px;color:var(--text-dim);margin-bottom:4px}
+.provider-popup .close-btn{position:absolute;top:12px;right:14px;color:var(--text-muted);cursor:pointer;font-size:18px;line-height:1}
+
+/* THREADS */
+.thread-card{background:var(--bg3);border:1px solid var(--gold-border);border-radius:var(--radius);padding:14px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start}
+.thread-status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.thread-status-dot.waiting{background:var(--amber)}
+.thread-status-dot.urgent{background:var(--red);animation:pulse 1.5s infinite}
+.thread-status-dot.resolved{background:var(--green)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.thread-person{font-size:13px;font-weight:500;color:var(--text)}
+.thread-topic{font-size:12px;color:var(--text-dim);margin-top:2px}
+.thread-updated{font-size:10px;color:var(--text-muted);margin-top:4px}
+
+/* FINANCIAL v3 */
+.fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.fin-card{background:var(--bg3);border:1px solid var(--gold-border);border-radius:var(--radius);padding:14px;text-align:center}
+.fin-card .label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
+.fin-card .value{font-family:var(--font-display);font-size:24px;font-weight:400}
+.fin-card .sub{font-size:10px;color:var(--text-muted);margin-top:3px}
+.gic-ticker{background:rgba(229,69,69,0.08);border:1px solid rgba(229,69,69,0.2);border-radius:8px;padding:10px 14px;text-align:center;margin-bottom:12px}
+.gic-ticker .label{font-size:9px;letter-spacing:2px;color:var(--red);text-transform:uppercase;margin-bottom:4px}
+.gic-ticker .value{font-size:18px;color:var(--red);font-weight:500}
+.income-bar-row{margin-bottom:10px}
+.income-bar-label{display:flex;justify-content:space-between;margin-bottom:5px;font-size:11px}
+.income-bar-name{color:var(--text-dim)}
+.income-bar-val{color:var(--gold);font-weight:500}
+.income-bar-track{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;border:1px solid var(--gold-border)}
+.income-bar-fill{height:100%;border-radius:3px;transition:width 1s ease}
+.cpft-options{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}
+.cpft-opt{background:var(--bg3);border:1px solid var(--gold-border);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;transition:all 0.2s}
+.cpft-opt:hover{border-color:var(--gold)}
+.cpft-opt .opt-icon{font-size:18px;margin-bottom:4px}
+.cpft-opt .opt-label{font-size:9px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase}
+.cpft-opt .opt-action{font-size:10px;color:var(--gold);margin-top:3px}
+.scott-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--gold-border);font-size:12px}
+.scott-item:last-child{border-bottom:none}
+.scott-num{width:22px;height:22px;border-radius:50%;background:var(--gold-dim);color:var(--gold);font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.scott-text{flex:1;color:var(--text-dim)}
+.scott-detail{font-size:10px;color:var(--text-muted);margin-top:2px}
+.net-pos-bar{background:var(--bg3);border:1px solid var(--gold-border);border-radius:var(--radius);padding:16px;margin:12px 0}
+.net-bar-track{height:12px;background:rgba(229,69,69,0.2);border-radius:6px;overflow:hidden;margin:8px 0}
+.net-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--green));border-radius:6px}
+.net-bar-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--text-muted)}
+
+/* COMPASS */
+.compass-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.compass-card{background:var(--bg3);border:1px solid var(--gold-border);border-radius:var(--radius);padding:12px;cursor:pointer;transition:all 0.2s}
+.compass-card:hover{border-color:rgba(196,151,62,0.5);background:var(--bg4)}
+.compass-num{font-size:9px;color:var(--gold);letter-spacing:2px;margin-bottom:4px}
+.compass-name{font-size:12px;font-weight:500;color:var(--text);line-height:1.3}
+.compass-tagline{font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.4}
+.status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-left:6px;vertical-align:middle}
+.status-dot.building{background:var(--amber)}
+.status-dot.active{background:var(--green);box-shadow:0 0 6px rgba(76,175,80,0.5)}
+.status-dot.planned{background:var(--text-muted)}
+.status-dot.live{background:var(--gold);box-shadow:0 0 6px rgba(196,151,62,0.4)}
+
+/* ══════════════════════════════════
+   SAM WEEK TAB — v3 NEW
+   ══════════════════════════════════ */
+.samweek-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.samweek-title{font-family:var(--font-display);font-size:20px;color:var(--gold-light);font-weight:300}
+.samweek-sub{font-size:9px;color:var(--text-muted);letter-spacing:2px;margin-top:2px}
+.day-nav{display:flex;gap:6px}
+.day-btn{padding:5px 10px;border-radius:16px;font-size:10px;font-weight:500;border:1px solid var(--gold-border);color:var(--text-muted);cursor:pointer;transition:all 0.2s;letter-spacing:0.5px}
+.day-btn.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+.day-btn.today{border-color:var(--green);color:var(--green)}
+
+/* SCHEDULE GRID */
+.schedule-wrap{overflow-y:auto;max-height:calc(100dvh - 260px);scrollbar-width:none}
+.schedule-wrap::-webkit-scrollbar{display:none}
+.schedule-block{display:flex;gap:0;margin-bottom:2px;align-items:stretch;min-height:40px}
+.schedule-time{width:46px;font-size:10px;color:var(--text-muted);padding:10px 8px 0 0;flex-shrink:0;text-align:right;letter-spacing:0.3px}
+.schedule-activity{flex:1;border-radius:7px;padding:8px 11px;position:relative;min-height:36px;display:flex;align-items:center}
+.activity-name{font-size:12px;font-weight:500;line-height:1.3}
+.activity-detail{font-size:10px;opacity:0.75;margin-top:2px}
+
+/* Activity colour palette */
+.act-sleep{background:rgba(26,26,62,0.8);border:1px solid rgba(74,74,140,0.3)}
+.act-sleep .activity-name{color:#8888cc}
+.act-wake{background:rgba(196,151,62,0.12);border:1px solid var(--gold-border)}
+.act-wake .activity-name{color:var(--gold)}
+.act-meditate{background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.25)}
+.act-meditate .activity-name{color:#c39bd3}
+.act-yoga{background:rgba(76,175,80,0.1);border:1px solid rgba(76,175,80,0.2)}
+.act-yoga .activity-name{color:#81c784}
+.act-braingames{background:rgba(74,158,218,0.1);border:1px solid rgba(74,158,218,0.2)}
+.act-braingames .activity-name{color:#7ec8f5}
+.act-walk{background:rgba(38,166,91,0.1);border:1px solid rgba(38,166,91,0.2)}
+.act-walk .activity-name{color:#66bb6a}
+.act-smoothie{background:rgba(255,183,77,0.1);border:1px solid rgba(255,183,77,0.2)}
+.act-smoothie .activity-name{color:#ffcc80}
+.act-pilates{background:rgba(74,158,218,0.12);border:1px solid rgba(74,158,218,0.25)}
+.act-pilates .activity-name{color:#90caf9}
+.act-food{background:rgba(196,151,62,0.1);border:1px solid rgba(196,151,62,0.2)}
+.act-food .activity-name{color:var(--gold)}
+.act-housekeeper{background:rgba(96,125,139,0.12);border:1px solid rgba(96,125,139,0.2)}
+.act-housekeeper .activity-name{color:#90a4ae}
+.act-massage{background:rgba(233,30,140,0.1);border:1px solid rgba(233,30,140,0.2)}
+.act-massage .activity-name{color:#f48fb1}
+.act-calm{background:rgba(26,188,156,0.1);border:1px solid rgba(26,188,156,0.2)}
+.act-calm .activity-name{color:#80cbc4}
+.act-nap{background:rgba(52,73,94,0.4);border:1px solid rgba(52,73,94,0.6)}
+.act-nap .activity-name{color:#90a4ae}
+.act-therapy{background:rgba(155,89,182,0.15);border:1px solid rgba(155,89,182,0.3)}
+.act-therapy .activity-name{color:#ce93d8}
+.act-medical{background:rgba(229,69,69,0.1);border:1px solid rgba(229,69,69,0.2)}
+.act-medical .activity-name{color:#ef9a9a}
+.act-beach{background:rgba(0,188,212,0.1);border:1px solid rgba(0,188,212,0.2)}
+.act-beach .activity-name{color:#80deea}
+.act-beauty{background:rgba(233,30,140,0.1);border:1px solid rgba(233,30,140,0.2)}
+.act-beauty .activity-name{color:#f48fb1}
+.act-gym{background:rgba(33,150,243,0.1);border:1px solid rgba(33,150,243,0.2)}
+.act-gym .activity-name{color:#90caf9}
+.act-kids{background:rgba(255,152,0,0.1);border:1px solid rgba(255,152,0,0.2)}
+.act-kids .activity-name{color:#ffcc80}
+.act-cuddle{background:rgba(233,30,99,0.1);border:1px solid rgba(233,30,99,0.2)}
+.act-cuddle .activity-name{color:#f48fb1}
+.act-empty{background:transparent;border:1px solid rgba(255,255,255,0.03)}
+.act-empty .activity-name{color:var(--text-muted);font-size:11px}
+.act-outdoors{background:rgba(0,188,212,0.1);border:1px solid rgba(0,188,212,0.2)}
+.act-outdoors .activity-name{color:#80deea}
+
+/* WEEK OVERVIEW */
+.week-overview{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px}
+.day-card{background:var(--bg3);border:1px solid var(--gold-border);border-radius:8px;padding:8px 4px;text-align:center;cursor:pointer;transition:all 0.2s}
+.day-card:hover{border-color:var(--gold)}
+.day-card.active{border-color:var(--gold);background:var(--gold-dim)}
+.day-card.today-card{border-color:var(--green)}
+.day-name{font-size:9px;color:var(--text-muted);letter-spacing:1px;margin-bottom:4px}
+.day-card.active .day-name,.day-card.today-card .day-name{color:var(--gold)}
+.day-dots{display:flex;justify-content:center;gap:2px;flex-wrap:wrap}
+.day-dot{width:5px;height:5px;border-radius:50%}
+
+/* WEEK LEGEND */
+.legend-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text-muted)}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* AI CHAT */
+.chat-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:none;backdrop-filter:blur(4px)}
+.chat-overlay.show{display:block}
+.chat-panel{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--gold-border);border-radius:20px 20px 0 0;z-index:201;max-height:75vh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);box-shadow:0 -8px 40px rgba(0,0,0,0.6)}
+.chat-panel.show{transform:translateY(0)}
+.chat-drag{width:36px;height:4px;background:var(--gold-dim);border-radius:2px;margin:12px auto 0}
+.chat-header{padding:12px 20px;border-bottom:1px solid var(--gold-border);display:flex;align-items:center;justify-content:space-between}
+.chat-header h3{font-family:var(--font-display);font-size:18px;font-weight:500;color:var(--gold-light)}
+.chat-header .close{color:var(--text-muted);cursor:pointer;font-size:20px;line-height:1}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;min-height:160px;max-height:calc(75vh - 140px)}
+.chat-messages::-webkit-scrollbar{width:3px}
+.chat-messages::-webkit-scrollbar-thumb{background:var(--gold-dim)}
+.msg{max-width:85%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.6}
+.msg.user{align-self:flex-end;background:var(--gold-dim);border:1px solid var(--gold-border);color:var(--text)}
+.msg.ai{align-self:flex-start;background:var(--bg3);border:1px solid var(--gold-border);color:var(--text-dim)}
+.msg.system{align-self:center;background:transparent;color:var(--text-muted);font-size:11px;font-style:italic}
+.chat-input-row{padding:12px 16px;border-top:1px solid var(--gold-border);display:flex;gap:8px;align-items:flex-end}
+.chat-input{flex:1;background:var(--bg3);border:1px solid var(--gold-border);border-radius:12px;padding:10px 14px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none;resize:none;max-height:80px;line-height:1.5}
+.chat-input::placeholder{color:var(--text-muted)}
+.chat-input:focus{border-color:var(--gold)}
+.chat-send{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#a07830);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;flex-shrink:0;transition:all 0.2s;box-shadow:0 2px 10px rgba(196,151,62,0.3)}
+.chat-send:hover{transform:scale(1.05)}
+.chat-send:disabled{opacity:0.5;cursor:not-allowed}
+.typing-indicator{display:flex;gap:4px;align-items:center;padding:4px 0}
+.typing-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:typing 1.2s infinite}
+.typing-dot:nth-child(2){animation-delay:0.2s}
+.typing-dot:nth-child(3){animation-delay:0.4s}
+@keyframes typing{0%,60%,100%{transform:translateY(0);opacity:0.4}30%{transform:translateY(-4px);opacity:1}}
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div id="cc-gate" style="position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:40px">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:32px;color:#e8c97a;margin-bottom:4px">Command Centre</div>
+  <div style="font-size:9px;color:#555550;letter-spacing:3px;margin-bottom:32px">v6 — ATTITUDE DEFINES ALTITUDE</div>
+  <input id="cc-pw" type="password" placeholder="Enter access code"
+    style="background:#0c0c14;border:1px solid rgba(196,151,62,0.3);border-radius:8px;padding:12px 18px;color:#f0f0e8;font-size:14px;outline:none;width:240px;text-align:center;font-family:'Montserrat',sans-serif;letter-spacing:2px;margin-bottom:12px"
+    onkeydown="if(event.key==='Enter')checkPW()">
+  <button onclick="checkPW()" style="background:linear-gradient(135deg,#c4973e,#a07830);border:none;color:#fff;padding:12px 32px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;letter-spacing:1px;font-family:'Montserrat',sans-serif">ENTER</button>
+  <div id="cc-err" style="color:#e54545;font-size:11px;margin-top:10px;display:none">Access denied</div>
+</div>
+
+<div class="app" id="app" style="display:none">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div style="display:flex;align-items:center;gap:8px">
+        <h1>Command Centre</h1>
+        <span class="v-badge">V6</span>
+      </div>
+      <div class="tagline">attitude defines altitude</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div>
+        <div class="clock" id="clock">--:--</div>
+        <div class="clock date" id="date-display">--</div>
+      </div>
+      <button id="sync-btn" onclick="manualSync()" style="background:var(--gold-dim);border:1px solid var(--gold-border);color:var(--gold);padding:7px 12px;border-radius:16px;font-family:var(--font-body);font-size:10px;font-weight:500;cursor:pointer;letter-spacing:0.5px;white-space:nowrap;transition:all 0.2s">⟳ SYNC</button>
+      <button class="ai-btn" onclick="openChat()">✦ MrAI</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('actions',this)">Actions</div>
+    <div class="tab" onclick="switchTab('timeline',this)">Timeline</div>
+    <div class="tab" onclick="switchTab('sammap',this)">SamMap</div>
+    <div class="tab new-tab" onclick="switchTab('samweek',this)">SamWeek</div>
+    <div class="tab" onclick="switchTab('threads',this)">Threads</div>
+    <div class="tab" onclick="switchTab('financial',this)">Financial</div>
+    <div class="tab" onclick="switchTab('compass',this)">Compass</div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- TAB 1: ACTIONS -->
+    <div id="panel-actions" class="panel active">
+      <div class="vision-bar">
+        <div class="vision-step active">Vision</div>
+        <div class="vision-step active">Objective</div>
+        <div class="vision-step active">Strategy</div>
+        <div class="vision-step active">Action Plan</div>
+        <div class="vision-step active">Execution</div>
+        <div class="vision-step">Review</div>
+      </div>
+      <div class="section-label">🔴 Urgent</div>
+      <div id="actions-red"></div>
+      <div class="section-label">🟡 This Week</div>
+      <div id="actions-amber"></div>
+      <div class="section-label">🔵 Planned</div>
+      <div id="actions-blue"></div>
+      <div class="section-label">Add Action</div>
+      <div class="add-action">
+        <select class="urgency-sel" id="new-urgency">
+          <option value="red">🔴</option>
+          <option value="amber" selected>🟡</option>
+          <option value="blue">🔵</option>
+        </select>
+        <input class="add-input" id="new-action-text" placeholder="New action..."/>
+        <button class="add-btn" onclick="addAction()">Add</button>
+      </div>
+    </div>
+
+    <!-- TAB 2: TIMELINE -->
+    <div id="panel-timeline" class="panel">
+      <div class="section-label">Sam Medical Critical Path — 2026</div>
+      <div class="timeline-wrap">
+        <div class="timeline-track" id="timeline-track"></div>
+      </div>
+      <div class="section-label" style="margin-top:24px">Event Detail</div>
+      <div id="milestones"></div>
+    </div>
+
+    <!-- TAB 3: SAMMAP -->
+    <div id="panel-sammap" class="panel">
+      <div class="sammap-filters" id="sammap-filters">
+        <button class="filter-btn all active-filter" onclick="filterMap('all',this)">All</button>
+        <button class="filter-btn medical" onclick="filterMap('medical',this)">Medical</button>
+        <button class="filter-btn therapy" onclick="filterMap('therapy',this)">Therapy</button>
+        <button class="filter-btn beauty" onclick="filterMap('beauty',this)">Beauty</button>
+        <button class="filter-btn wellness" onclick="filterMap('wellness',this)">Wellness</button>
+        <button class="filter-btn admin" onclick="filterMap('admin',this)">Admin</button>
+      </div>
+      <div class="sammap-svg-wrap" id="sammap-wrap"></div>
+      <div class="provider-popup" id="provider-popup">
+        <span class="close-btn" onclick="closePopup()">×</span>
+        <h3 id="pp-name"></h3>
+        <div class="role" id="pp-role"></div>
+        <div class="detail" id="pp-location">📍 <span></span></div>
+        <div class="detail" id="pp-phone">📞 <span></span></div>
+        <div class="detail" id="pp-freq">🗓 <span></span></div>
+      </div>
+    </div>
+
+    <!-- TAB 4: SAM WEEK (NEW v3) -->
+    <div id="panel-samweek" class="panel">
+      <div class="samweek-header">
+        <div>
+          <div class="samweek-title">Sam's Week</div>
+          <div class="samweek-sub">TAP A DAY TO VIEW SCHEDULE</div>
+        </div>
+      </div>
+
+      <!-- 7-day overview cards -->
+      <div class="week-overview" id="week-overview"></div>
+
+      <!-- Legend -->
+      <div class="legend-wrap">
+        <div class="legend-item"><div class="legend-dot" style="background:#8888cc"></div>Sleep/Rest</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#81c784"></div>Wellness</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#90caf9"></div>Exercise</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ce93d8"></div>Therapy</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ef9a9a"></div>Medical</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f48fb1"></div>Beauty</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ffcc80"></div>Nutrition</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#80deea"></div>Outdoors</div>
+      </div>
+
+      <!-- Day label -->
+      <div id="selected-day-label" style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold-light);margin-bottom:12px;font-weight:300">Monday</div>
+
+      <!-- Schedule blocks -->
+      <div class="schedule-wrap" id="schedule-wrap"></div>
+    </div>
+
+    <!-- TAB 5: THREADS -->
+    <div id="panel-threads" class="panel">
+      <div class="section-label">Open Threads</div>
+      <div id="threads-list"></div>
+    </div>
+
+    <!-- TAB 6: FINANCIAL (v3 upgraded) -->
+    <div id="panel-financial" class="panel">
+
+      <!-- Top 2 cards -->
+      <div class="fin-grid">
+        <div class="fin-card">
+          <div class="label">CPFT Balance</div>
+          <div class="value" style="color:var(--gold-light)">$457k</div>
+          <div class="sub">ANZ 1391 — warehouse sale</div>
+        </div>
+        <div class="fin-card">
+          <div class="label">ATO Debt (est.)</div>
+          <div class="value" style="color:var(--red)">~$500k</div>
+          <div class="sub">GIC accruing daily</div>
+        </div>
+      </div>
+
+      <!-- GIC ticker -->
+      <div class="gic-ticker">
+        <div class="label">⚠ GIC Accruing</div>
+        <div class="value">~$150 / day &nbsp;·&nbsp; ~$4,500 / month</div>
+      </div>
+
+      <!-- CPFT Deployment -->
+      <div class="section-label">CPFT $457k — Deployment Options</div>
+      <div class="cpft-options">
+        <div class="cpft-opt">
+          <div class="opt-icon">🏛</div>
+          <div class="opt-label">Pay ATO</div>
+          <div class="opt-action">Stops GIC</div>
+        </div>
+        <div class="cpft-opt">
+          <div class="opt-icon">🏠</div>
+          <div class="opt-label">Property</div>
+          <div class="opt-action">AssetShare</div>
+        </div>
+        <div class="cpft-opt">
+          <div class="opt-icon">📊</div>
+          <div class="opt-label">Hold</div>
+          <div class="opt-action">Scott advice</div>
+        </div>
+      </div>
+
+      <!-- Net position bar -->
+      <div class="net-pos-bar">
+        <div style="font-size:9px;letter-spacing:2px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase">CPFT vs ATO</div>
+        <div class="net-bar-track">
+          <div class="net-bar-fill" style="width:91%"></div>
+        </div>
+        <div class="net-bar-labels">
+          <span>CPFT $457k</span>
+          <span style="color:var(--amber)">ATO ~$500k</span>
+        </div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:6px">Shortfall ~$43k — negotiation with Scott in progress</div>
+      </div>
+
+      <!-- Income breakdown -->
+      <div class="section-label">2026 Projected Income</div>
+      <div id="income-bars"></div>
+      <div style="background:var(--bg3);border:1px solid var(--gold-border);border-radius:var(--radius);padding:16px;text-align:center;margin:12px 0">
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px">Total Projected Gross</div>
+        <div style="font-family:var(--font-display);font-size:42px;color:var(--gold-light);font-weight:300">$615k</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Salary + Commissions + NDIS + Consulting</div>
+      </div>
+
+      <!-- Sam personal debt -->
+      <div class="section-label">Sam Personal Debt (~$86k)</div>
+      <div id="sam-debt-list"></div>
+
+      <!-- Scott deep dive -->
+      <div class="section-label">Scott Williams — ATO Deep Dive</div>
+      <div class="scott-items" id="scott-items"></div>
+    </div>
+
+    <!-- TAB 7: COMPASS -->
+    <div id="panel-compass" class="panel">
+      <div style="text-align:center;padding:12px 0 20px">
+        <div style="font-family:var(--font-display);font-size:26px;color:var(--gold-light);font-weight:300">SashaCross.pro</div>
+        <div style="font-size:9px;color:var(--text-muted);letter-spacing:3px;margin-top:4px;margin-bottom:4px">12 ENTITIES · ATTITUDE DEFINES ALTITUDE</div>
+        <div style="font-size:10px;color:var(--text-muted)">Source is the field · Sasha is the conduit</div>
+      </div>
+      <div class="compass-grid" id="compass-grid"></div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /app -->
+
+<!-- AI CHAT PANEL -->
+<div class="chat-overlay" id="chat-overlay" onclick="closeChat()"></div>
+<div class="chat-panel" id="chat-panel">
+  <div class="chat-drag"></div>
+  <div class="chat-header">
+    <h3>✦ MrAI — v6</h3>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button onclick="loadFromDB()" style="background:none;border:1px solid var(--gold-border);color:var(--gold);border-radius:12px;padding:3px 10px;font-size:10px;cursor:pointer;letter-spacing:1px">⟳ SYNC</button>
+      <span class="close" onclick="closeChat()">×</span>
+    </div>
+  </div>
+  <div class="chat-messages" id="chat-messages">
+    <div class="msg system" id="chat-welcome">✦ MrAI v6 — connecting to database...</div>
+  </div>
+  <div class="chat-input-row">
+    <textarea class="chat-input" id="chat-input" rows="1" placeholder="Tell me what to change..." onkeydown="handleKey(event)"></textarea>
+    <button class="chat-send" id="chat-send" onclick="sendMessage()">➤</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════
+// PASSWORD
+// ═══════════════════════
+const CC_HASH='79d250ba326aac950c996d45f26315d8d4d27f0cc014da2acf532dedb44e8c0a';
+const DB_URL='https://script.google.com/macros/s/AKfycbz2n_RFPC-HO6ZUUL8happfolEZprVf8WJfJvcWHR954SkK65pwyUPlvpkzyy1S9GTS/exec';
+const DB_KEY='CROSS2026MRAI';
+async function sha256(msg){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(msg));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('')}
+async function checkPW(){
+  const hash=await sha256(document.getElementById('cc-pw').value);
+  if(hash===CC_HASH){
+    document.getElementById('cc-gate').style.display='none';
+    document.getElementById('app').style.display='flex';
+    localStorage.setItem('cc_auth',hash);
+  } else {
+    document.getElementById('cc-err').style.display='block';
+    document.getElementById('cc-pw').value='';
+    document.getElementById('cc-pw').focus();
+  }
+}
+(async()=>{
+  if(localStorage.getItem('cc_auth')===CC_HASH){
+    document.getElementById('cc-gate').style.display='none';
+    document.getElementById('app').style.display='flex';
+  }
+})();
+
+// ═══════════════════════
+// STORAGE
+// ═══════════════════════
+const store={
+  async get(k){try{if(window.storage){const r=await window.storage.get(k);return r?JSON.parse(r.value):null}else{const v=localStorage.getItem('cc3_'+k);return v?JSON.parse(v):null}}catch(e){return null}},
+  async set(k,v){try{if(window.storage){await window.storage.set(k,JSON.stringify(v))}else{localStorage.setItem('cc3_'+k,JSON.stringify(v))}}catch(e){}}
+};
+
+// ═══════════════════════
+// DEFAULT DATA
+// ═══════════════════════
+const DEFAULT_DATA={
+  actions:[
+    {id:1,text:"Book Dr Jayalath mapping appointment — arTMS 25 May at risk — ClinicalManager@bestbrainsandminds.com.au",urgency:"red",done:false},
+    {id:2,text:"Speeding fines — pay or payment plan — licence suspension risk",urgency:"red",done:false},
+    {id:3,text:"NDIS decline appeal — DSM-5 psychiatric report — coordinate with Denise Lawler",urgency:"red",done:false},
+    {id:4,text:"samanthacross.pro — renew before Aug 2026 at Synergy Wholesale",urgency:"red",done:false},
+    {id:5,text:"Claim $200 Anthropic credit — before 17 April — Settings → Usage on web",urgency:"amber",done:false},
+    {id:6,text:"Connect Google Calendar to Skylight — 5 min setup",urgency:"amber",done:false},
+    {id:7,text:"Deploy Apps Script URL to CC — DONE ✅",urgency:"amber",done:true},
+    {id:8,text:"CPP41419 Leverage Group — both enrolled ✅",urgency:"amber",done:true},
+    {id:9,text:"arTMS $750 paid ✅",urgency:"amber",done:true},
+    {id:10,text:"Book Dr Zac Turner — Sasha + Sam — drzac.com.au",urgency:"amber",done:false},
+    {id:11,text:"Call Laitha Murthy — RPA Cancer Genetics — 02 9515 8780",urgency:"amber",done:false},
+    {id:12,text:"SSL renewal — sashacross.pro — before 30 May 2026 at uweb.net.au",urgency:"amber",done:false},
+    {id:13,text:"Register chasingminutes.pro + earnmorespendless.pro at uweb.net.au",urgency:"blue",done:false},
+    {id:14,text:"Register passion8pilates.pro + MrMrsCross.pro at uweb ($52.09 each)",urgency:"blue",done:false},
+    {id:15,text:"Pier One — confirm date 24 or 26 July 2026",urgency:"blue",done:false},
+    {id:16,text:"Book Quoc Nguyen — wills, EPA, guardianship, AssetShare structure",urgency:"blue",done:false},
+    {id:17,text:"ASIC search — AssetShare availability + register assetshare.pro",urgency:"blue",done:false},
+    {id:18,text:"Axel letter — reflect, edit, finalise, send",urgency:"blue",done:false},
+    {id:19,text:"Podcast brief — The Cross Standard / Crossing Lines — build 1-page brief",urgency:"blue",done:false},
+    {id:20,text:"KnightsForFreedom — ACNC registration, ABN, DGR status",urgency:"blue",done:false},
+    {id:21,text:"Marko — 4 tasks: uni timeline, RE certs, car, AI knowledge — deadline 18 Apr",urgency:"blue",done:false},
+  ],
+  threads:[
+    {id:1,person:"Scott Williams — Tribel",topic:"ATO tax agent linking across all entities. Meeting pending. Deep dive on divorce debt + mum loan.",status:"waiting",updated:"5 Apr 2026"},
+    {id:2,person:"NDIS — Denise Lawler",topic:"Plan change declined. Appeal strategy needed. DSM-5 psychiatric report required.",status:"urgent",updated:"2 Apr 2026"},
+    {id:3,person:"Wil Luo — Realtisan",topic:"Option 3 Avantaus expansion meeting. Outcome unknown. Chairman presentation pending.",status:"waiting",updated:"5 Apr 2026"},
+    {id:4,person:"Dr Ghadiri / Jazmin",topic:"Sam left-side facial pain — possible Trigeminal Neuralgia. Callback via info@sydneyneurology.com.au",status:"urgent",updated:"1 Apr 2026"},
+    {id:5,person:"Howard Ting",topic:"Financial Controller for Cross group. Preferred accountant name TBC. Onboarding pending.",status:"waiting",updated:"Mar 2026"},
+    {id:6,person:"Belinda Clarke — Best Brains",topic:"arTMS 25 May tentative. $750 paid. Mapping appointment must be booked ASAP.",status:"urgent",updated:"5 Apr 2026"},
+    {id:7,person:"Gillian Harbulot — Leverage",topic:"CPP41419 both enrolled ✅. April cohort 14-23 Apr, 9am-5pm. Zoom Impact workshop.",status:"resolved",updated:"5 Apr 2026"},
+  ],
+  timeline:[
+    {date:"10 Apr",event:"Physio — Liam",status:"upcoming",detail:"Mojo Physio Co, Rozelle. 8:00–8:45am. Sam with Liam Rheinberger — exercise physiology."},
+    {date:"14–16 Apr",event:"Leverage Zoom 1",status:"upcoming",detail:"CPP41419 Certificate IV. Both Sasha + Sam enrolled. 9am–5pm AEST. Zoom Impact Workshop."},
+    {date:"21 Apr",event:"MRI Brain & Spine",status:"upcoming",detail:"I-MED Miranda, 533 Kingsway. 5:30pm. Referral Dr Ghadiri. Note: outside Sam's best window."},
+    {date:"21–23 Apr",event:"Leverage Zoom 2",status:"upcoming",detail:"CPP41419 Certificate IV. Days 4–6. 9am–5pm AEST."},
+    {date:"29 Apr",event:"Dr Ghadiri",status:"upcoming",detail:"Sydney Neurology, Level 4, 94 Mallett St Camperdown. 9am. Reviews MRI + bloods. Facial pain discussed."},
+    {date:"12 May",event:"Ocrevus Infusion 3",status:"upcoming",detail:"RPA Hospital, Missenden Rd Camperdown. 8am–2pm. Sasha to arrange transport. Full day."},
+    {date:"15 May",event:"Jeli Birthday",status:"upcoming",detail:"Isabella's birthday — plan something."},
+    {date:"25 May",event:"arTMS Week 1",status:"tentative",detail:"Best Brains & Minds, Hornsby. $750 paid. Mapping appointment MUST be booked first ⚠️"},
+    {date:"~Nov 2026",event:"Ocrevus Infusion 4",status:"future",detail:"RPA Hospital. Book ~May 2026. Dr Ghadiri treating."},
+  ],
+  sammap_providers:[
+    {id:1,name:"Dr Kanny Hannah",role:"Psychologist — ADHD",cat:"therapy",ring:3,angle:255,location:"MyHealth Leichhardt, Shop 55D Marketplace",phone:"02 9560 2525",freq:"Every 2nd Tuesday"},
+    {id:2,name:"Dr Nalinaa Kanapathipillai",role:"GP",cat:"medical",ring:3,angle:245,location:"MyHealth Leichhardt",phone:"02 9560 2525",freq:"Monthly"},
+    {id:3,name:"Dr Sajeeva Jayalath",role:"Psychiatrist — arTMS",cat:"medical",ring:4,angle:10,location:"Best Brains & Minds, Suite 20, 25-29 Hunter St Hornsby",phone:"02 8317 5440",freq:"6-weekly"},
+    {id:4,name:"Dr Mahtab Ghadiri",role:"MS Neurologist",cat:"medical",ring:3,angle:205,location:"Sydney Neurology, Level 4, 94 Mallett St Camperdown",phone:"9351 0730",freq:"Bi-annual"},
+    {id:5,name:"Mette Juel Stanbury",role:"Occupational Therapist",cat:"therapy",ring:1,angle:180,location:"In-home — Barangaroo",phone:"0455 615 858",freq:"Fortnightly"},
+    {id:6,name:"Liam Rheinberger",role:"Physio / Exercise Physiology",cat:"therapy",ring:2,angle:200,location:"Mojo Physio Co, Rozelle",phone:"0400 324 173",freq:"Weekly"},
+    {id:7,name:"Denise Lawler",role:"NDIS Support Coordinator",cat:"admin",ring:4,angle:230,location:"PO Box 127 Moorebank NSW 1875",phone:"0401 737 855",freq:"Fortnightly"},
+    {id:8,name:"Prof. Goodwin",role:"Cancer Genetics",cat:"medical",ring:3,angle:195,location:"RPA, Missenden Rd Camperdown",phone:"02 9515 8780",freq:"Annual"},
+    {id:9,name:"Jackie's Sports Massage",role:"Massage Therapy",cat:"therapy",ring:1,angle:150,location:"Level 6, 185 Elizabeth St Sydney",phone:"02 9261 4071",freq:"Weekly"},
+    {id:10,name:"Lash Blossom",role:"Lash Extensions",cat:"beauty",ring:1,angle:60,location:"Level 8, 428 George St Sydney",phone:"0415 706 836",freq:"Monthly"},
+    {id:11,name:"Soma Collective",role:"Pilates",cat:"wellness",ring:1,angle:30,location:"88 Phillip St Sydney",phone:"",freq:"Weekly"},
+    {id:12,name:"Status Co",role:"Hair & Makeup",cat:"beauty",ring:1,angle:330,location:"100 Barangaroo Ave",phone:"",freq:"Monthly"},
+    {id:13,name:"I-MED Radiology Miranda",role:"MRI — MS Imaging",cat:"medical",ring:4,angle:170,location:"533 Kingsway Miranda NSW 2228",phone:"02 9525 6055",freq:"Bi-annual"},
+    {id:14,name:"Calm Bar",role:"Cold Bath Therapy",cat:"wellness",ring:2,angle:220,location:"Rozelle",phone:"1800 971 711",freq:"Weekly"},
+    {id:15,name:"California Nails",role:"Nails",cat:"beauty",ring:1,angle:90,location:"200 Barangaroo Ave",phone:"",freq:"Every 3 weeks"},
+  ],
+  compass:[
+    {num:"01",name:"KnightsForFreedom",tagline:"Freedom is a state of mind before it is a state of being.",status:"building"},
+    {num:"02",name:"CrossSold.pro",tagline:"You don't come here to learn how to sell. You come here because it's already sold.",status:"building"},
+    {num:"03",name:"BuyProperty",tagline:"The right property. The right time. The right guidance.",status:"planned"},
+    {num:"04",name:"CrossExpress.pro",tagline:"Support that moves with you.",status:"active"},
+    {num:"05",name:"QuantumField.pro",tagline:"The field is where it all begins.",status:"building"},
+    {num:"06",name:"CrossCrypto.pro",tagline:"Decentralised. Disciplined. Long term.",status:"planned"},
+    {num:"07",name:"CrossProperties.pro",tagline:"Project sales. Buyer's agency. Land done right.",status:"active"},
+    {num:"08",name:"AssetShare.pro",tagline:"Own the asset. Share the upside.",status:"building"},
+    {num:"09",name:"BallerHustlerPlayer",tagline:"The grind is the glory.",status:"planned"},
+    {num:"10",name:"FourElementsCo",tagline:"Earth. Water. Fire. Air.",status:"planned"},
+    {num:"11",name:"CrossPowersports",tagline:"Power. Speed. Precision.",status:"active"},
+    {num:"12",name:"CrossConsulting.pro",tagline:"Strategy. Structure. Solutions.",status:"building"},
+  ],
+  dbSnapshot:{actions:[],contacts:[],financial:[],sam:[],log:[],compass:[],rules:[],lastSync:null}
+};
+
+// ═══════════════════════
+// SAM WEEKLY SCHEDULE DATA
+// ═══════════════════════
+// Each day: array of {time, name, detail, type, duration (in 15-min blocks)}
+const SAM_WEEK={
+  Monday:[
+    {time:"3:00",name:"Sleep",type:"sleep",dur:4},
+    {time:"4:00",name:"Wake Up",detail:"Rise + shine",type:"wake",dur:1},
+    {time:"4:15",name:"Meditate",detail:"Morning meditation",type:"meditate",dur:1},
+    {time:"4:30",name:"Yoga",detail:"Morning flow",type:"yoga",dur:3},
+    {time:"5:15",name:"Brain Games",detail:"Cognitive training",type:"braingames",dur:2},
+    {time:"5:45",name:"Walk",detail:"Morning walk",type:"walk",dur:3},
+    {time:"6:20",name:"Smoothie",detail:"Morning nutrition",type:"smoothie",dur:1},
+    {time:"6:30",name:"Pilates",detail:"Soma Collective — Barangaroo",type:"pilates",dur:5},
+    {time:"8:00",name:"Housekeeper",detail:"8am–12pm",type:"housekeeper",dur:4},
+    {time:"8:30",name:"Breakfast",detail:"Morning meal",type:"food",dur:2},
+    {time:"9:00",name:"Calm Bar",detail:"Cold bath therapy — Rozelle",type:"calm",dur:4},
+    {time:"10:00",name:"Rest / Nap",detail:"Recovery",type:"nap",dur:2},
+    {time:"11:00",name:"Psychologist",detail:"Dr Kanny Hannah — ADHD — MyHealth Leichhardt",type:"therapy",dur:4},
+    {time:"12:00",name:"Lunch",detail:"Midday meal",type:"food",dur:4},
+    {time:"13:00",name:"GP — Dr Nalina",detail:"MyHealth Leichhardt",type:"medical",dur:2},
+    {time:"14:00",name:"Gym / Home",detail:"Strength training",type:"gym",dur:4},
+    {time:"15:30",name:"Snack",detail:"Afternoon nutrition",type:"food",dur:1},
+    {time:"17:45",name:"Dinner",detail:"Family dinner",type:"food",dur:5},
+    {time:"19:00",name:"Ready for Bed",detail:"Shower + wind down",type:"sleep",dur:4},
+    {time:"20:00",name:"Tea & Cuddle",detail:"Evening connection",type:"cuddle",dur:2},
+    {time:"20:30",name:"Sleep",type:"sleep",dur:1},
+  ],
+  Tuesday:[
+    {time:"3:00",name:"Sleep",type:"sleep",dur:4},
+    {time:"4:00",name:"Wake Up",type:"wake",dur:1},
+    {time:"4:15",name:"Meditate",type:"meditate",dur:1},
+    {time:"4:30",name:"Yoga",type:"yoga",dur:3},
+    {time:"5:15",name:"Brain Games",type:"braingames",dur:2},
+    {time:"5:45",name:"Walk",type:"walk",dur:3},
+    {time:"6:20",name:"Smoothie",type:"smoothie",dur:1},
+    {time:"6:30",name:"PT — Personal Trainer",detail:"Personal training session",type:"pilates",dur:5},
+    {time:"8:30",name:"Breakfast",type:"food",dur:2},
+    {time:"10:00",name:"Rest / Nap",type:"nap",dur:2},
+    {time:"11:00",name:"Psychiatrist",detail:"Dr —  telehealth",type:"therapy",dur:4},
+    {time:"12:00",name:"Lunch",type:"food",dur:4},
+    {time:"13:00",name:"Nails",detail:"California Nails — 200 Barangaroo Ave",type:"beauty",dur:2},
+    {time:"14:00",name:"Gym / Home",type:"gym",dur:4},
+    {time:"15:30",name:"Snack",type:"food",dur:1},
+    {time:"17:45",name:"Dinner",type:"food",dur:5},
+    {time:"19:00",name:"Ready for Bed",type:"sleep",dur:4},
+    {time:"20:00",name:"Tea & Cuddle",type:"cuddle",dur:2},
+    {time:"20:30",name:"Sleep",type:"sleep",dur:1},
+  ],
+  Wednesday:[
+    {time:"3:00",name:"Sleep",type:"sleep",dur:4},
+    {time:"4:00",name:"Wake Up",type:"wake",dur:1},
+    {time:"4:15",name:"Meditate",type:"meditate",dur:1},
+    {time:"4:30",name:"Yoga",type:"yoga",dur:3},
+    {time:"5:15",name:"Brain Games",type:"braingames",dur:2},
+    {time:"5:45",name:"Walk",type:"walk",dur:3},
+    {time:"6:20",name:"Smoothie",type:"smoothie",dur:1},
+    {time:"6:30",name:"Pilates",type:"pilates",dur:5},
+    {time:"8:00",name:"Housekeeper",detail:"8am–12pm",type:"housekeeper",dur:4},
+    {time:"8:30",name:"Breakfast",type:"food",dur:2},
+    {time:"8:45",name:"Massage",detail:"Jackie's Sports Massage — Elizabeth St Sydney",type:"massage",dur:4},
+    {time:"10:00",name:"Rest / Nap",type:"nap",dur:2},
+    {time:"11:00",name:"Speech Therapy",detail:"Provider 9 — TBD",type:"therapy",dur:4},
+    {time:"12:00",name:"Lunch",type:"food",dur:4},
+    {time:"13:00",name:"Hair Dresser",detail:"Status Co — 100 Barangaroo Ave",type:"beauty",dur:2},
+    {time:"14:00",name:"Gym / Home",type:"gym",dur:4},
+    {time:"15:00",name:"Kids",detail:"Children's activities",type:"kids",dur:10},
+    {time:"15:30",name:"Snack",type:"food",dur:1},
+    {time:"17:45",name:"Dinner",type:"food",dur:5},
+    {time:"19:00",name:"Ready for Bed",type:"sleep",dur:4},
+    {time:"20:00",name:"Tea & Cuddle",type:"cuddle",dur:2},
+    {time:"20:30",name:"Sleep",type:"sleep",dur:1},
+  ],
+  Thursday:[
+    {time:"3:00",name:"Sleep",type:"sleep",dur:4},
+    {time:"4:00",name:"Wake Up",type:"wake",dur:1},
+    {time:"4:15",name:"Meditate",type:"meditate",dur:1},
+    {time:"4:30",name:"Yoga",type:"yoga",dur:3},
+    {time:"5:15",name:"Brain Games",type:"braingames",dur:2},
+    {time:"5:45",name:"Walk",type:"walk",dur:3},
+    {time:"6:20",name:"Smoothie",type:"smoothie",dur:1},
+    {time:"6:30",name:"Pilates",type:"pilates",dur:5},
+    {time:"8:30",name:"Breakfast",type:"food",dur:2},
+    {time:"10:00",name:"Rest / Nap",type:"nap",dur:2},
+    {time:"11:00",name:"OT — Mette",detail:"Mette Juel Stanbury — In-home Barangaroo",type:"therapy",dur:4},
+    {time:"12:00",name:"Lunch",type:"food",dur:4},
+    {time:"13:00",name:"Hair Extensions",detail:"Status Co",type:"beauty",dur:2},
+    {time:"14:00",name:"Gym / Home",type:"gym",dur:4},
+    {time:"15:30",name:"Snack",type:"food",dur:1},
+    {time:"17:45",name:"Dinner",type:"food",dur:5},
+    {time:"19:00",name:"Ready for Bed",type:"sleep",dur:4},
+    {time:"20:00",name:"Tea & Cuddle",type:"cuddle",dur:2},
+    {time:"20:30",name:"Sleep",type:"sleep",dur:1},
+  ],
+  Friday:[
+    {time:"3:00",name:"Sleep",type:"sleep",dur:4},
+    {time:"4:00",name:"Wake Up",type:"wake",dur:1},
+    {time:"4:15",name:"Meditate",type:"meditate",dur:1},
+    {time:"4:30",name:"Yoga",type:"yoga",dur:3},
+    {time:"5:15",name:"Brain Games",type:"braingames",dur:2},
+    {time:"5:45",name:"Walk",type:"walk",dur:3},
+    {time:"6:20",name:"Smoothie",type:"smoothie",dur:1},
+    {time:"6:30",name:"Pilates",type:"pilates",dur:5},
+    {time:"8:00",name:"Housekeeper",detail:"8am–12pm",type:"housekeeper",dur:4},
+    {time:"8:30",name:"Breakfast",type:"food",dur:2},
+    {time:"10:00",name:"Rest / Nap",type:"nap",dur:2},
+    {time:"11:00",name:"Beach / Rock Pool",detail:"Outdoors — nature therapy",type:"beach",dur:4},
+    {time:"12:00",name:"Lunch",type:"food",dur:4},
+    {time:"13:00",name:"Lashes",detail:"Lash Blossom — 428 George St Sydney",type:"beauty",dur:2},
+    {time:"14:00",name:"Gym / Home",type:"gym",dur:4},
+    {time:"15:00",name:"Kids",detail:"Children's activities",type:"kids",dur:10},
+    {time:"15:30",name:"Snack",type:"food",dur:1},
+    {time:"17:45",name:"Dinner",type:"food",dur:5},
+    {time:"19:00",name:"Ready for Bed",type:"sleep",dur:4},
+    {time:"20:00",name:"Tea & Cuddle",type:"cuddle",dur:2},
+    {time:"20:30",name:"Sleep",type:"sleep",dur:1},
+  ],
+  Saturday:[
+    {time:"3:00",name:"Sleep",type:"sleep",dur:4},
+    {time:"4:00",name:"Wake Up",type:"wake",dur:1},
+    {time:"4:15",name:"Meditate",type:"meditate",dur:1},
+    {time:"4:30",name:"Yoga",type:"yoga",dur:3},
+    {time:"5:15",name:"Brain Games",type:"braingames",dur:2},
+    {time:"5:45",name:"Walk",type:"walk",dur:3},
+    {time:"6:20",name:"Smoothie",type:"smoothie",dur:1},
+    {time:"6:30",name:"Pilates",type:"pilates",dur:5},
+    {time:"8:30",name:"Breakfast",type:"food",dur:2},
+    {time:"8:45",name:"Massage",detail:"Jackie's Sports Massage",type:"massage",dur:4},
+    {time:"9:00",name:"Kids Day",detail:"Kids activities",type:"kids",dur:4},
+    {time:"11:00",name:"Beach / Rock Pool",detail:"Outdoors — nature therapy",type:"beach",dur:4},
+    {time:"12:00",name:"Lunch",type:"food",dur:4},
+    {time:"13:00",name:"Make-Up",detail:"Status Co",type:"beauty",dur:2},
+    {time:"14:00",name:"Gym / Home",type:"gym",dur:4},
+    {time:"15:00",name:"Kids",type:"kids",dur:10},
+    {time:"15:30",name:"Snack",type:"food",dur:1},
+    {time:"17:45",name:"Dinner",type:"food",dur:5},
+    {time:"19:00",name:"Ready for Bed",type:"sleep",dur:4},
+    {time:"20:00",name:"Tea & Cuddle",type:"cuddle",dur:2},
+    {time:"20:30",name:"Sleep",type:"sleep",dur:1},
+  ],
+  Sunday:[
+    {time:"3:00",name:"Sleep",type:"sleep",dur:4},
+    {time:"4:00",name:"Wake Up",type:"wake",dur:1},
+    {time:"4:15",name:"Meditate",type:"meditate",dur:1},
+    {time:"4:30",name:"Yoga",type:"yoga",dur:3},
+    {time:"5:15",name:"Brain Games",type:"braingames",dur:2},
+    {time:"5:45",name:"Walk",type:"walk",dur:3},
+    {time:"6:20",name:"Smoothie",type:"smoothie",dur:1},
+    {time:"6:30",name:"Pilates",type:"pilates",dur:5},
+    {time:"8:00",name:"Outdoors Day",detail:"Fresh air and sunshine",type:"outdoors",dur:4},
+    {time:"8:30",name:"Breakfast",type:"food",dur:2},
+    {time:"8:45",name:"Massage",detail:"Jackie's Sports Massage",type:"massage",dur:4},
+    {time:"11:00",name:"Beach / Rock Pool",detail:"Outdoors — nature therapy",type:"beach",dur:4},
+    {time:"12:00",name:"Lunch",type:"food",dur:4},
+    {time:"14:00",name:"Gym / Home",type:"gym",dur:4},
+    {time:"15:00",name:"Kids",type:"kids",dur:10},
+    {time:"15:30",name:"Snack",type:"food",dur:1},
+    {time:"17:45",name:"Dinner",type:"food",dur:5},
+    {time:"19:00",name:"Ready for Bed",type:"sleep",dur:4},
+    {time:"20:00",name:"Tea & Cuddle",type:"cuddle",dur:2},
+    {time:"20:30",name:"Sleep",type:"sleep",dur:1},
+  ]
+};
+const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+// ═══════════════════════
+// CLOCK
+// ═══════════════════════
+function updateClock(){
+  const now=new Date();
+  const aedt=new Date(now.toLocaleString('en-US',{timeZone:'Australia/Sydney'}));
+  const h=String(aedt.getHours()).padStart(2,'0');
+  const m=String(aedt.getMinutes()).padStart(2,'0');
+  const s=String(aedt.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').textContent=h+':'+m+':'+s;
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('date-display').textContent=days[aedt.getDay()]+' '+aedt.getDate()+' '+months[aedt.getMonth()]+' '+aedt.getFullYear();
+}
+setInterval(updateClock,1000);updateClock();
+
+// ═══════════════════════
+// TABS
+// ═══════════════════════
+function switchTab(name,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  el.classList.add('active');
+}
+
+// ═══════════════════════
+// STATE
+// ═══════════════════════
+let STATE=JSON.parse(JSON.stringify(DEFAULT_DATA));
+async function loadState(){const saved=await store.get('ccstate6');if(saved)STATE=saved;renderAll()}
+async function saveState(){await store.set('ccstate6',STATE)}
+
+// ═══════════════════════
+// DB WRITE HELPERS — v6
+// ═══════════════════════
+async function writeActionToDB(action){
+  try{
+    const ul=action.urgency==='red'?'🔴 URGENT':action.urgency==='amber'?'🟡 THIS WEEK':'🔵 PLANNED';
+    const dt=new Date().toLocaleDateString('en-AU',{timeZone:'Australia/Sydney'});
+    await fetch(DB_URL,{method:'POST',body:JSON.stringify({apiKey:DB_KEY,action:'addRow',sheet:'ACTIONS',row:[ul,dt,action.text,'','','',action.done?'DONE':'OPEN']})});
+  }catch(e){console.warn('DB write failed:',e)}
+}
+async function markDeletedInDB(text){
+  try{
+    const dt=new Date().toLocaleDateString('en-AU',{timeZone:'Australia/Sydney'});
+    await fetch(DB_URL,{method:'POST',body:JSON.stringify({apiKey:DB_KEY,action:'addRow',sheet:'ACTIONS',row:['DELETED',dt,text,'','','','DELETED']})});
+  }catch(e){console.warn('DB delete failed:',e)}
+}
+
+// ═══════════════════════
+// RENDER ACTIONS
+// ═══════════════════════
+function renderActions(){
+  ['red','amber','blue'].forEach(u=>{
+    const el=document.getElementById('actions-'+u);
+    const items=STATE.actions.filter(a=>a.urgency===u);
+    el.innerHTML=items.map(a=>`
+      <div class="action-item ${a.urgency} ${a.done?'done':''}">
+        <div class="action-check ${a.done?'checked':''}" onclick="toggleAction(${a.id})">${a.done?'✓':''}</div>
+        <div class="action-text">${a.text}</div>
+        <div class="action-del" onclick="deleteAction(${a.id})">×</div>
+      </div>`).join('');
+  });
+}
+async function toggleAction(id){
+  const a=STATE.actions.find(x=>x.id===id);
+  if(a){
+    a.done=!a.done;
+    await saveState();
+    renderActions();
+    await writeActionToDB(a);
+  }
+}
+async function deleteAction(id){
+  const a=STATE.actions.find(x=>x.id===id);
+  if(a){
+    await markDeletedInDB(a.text);
+    if(!STATE.deletedTexts)STATE.deletedTexts=[];
+    STATE.deletedTexts.push(a.text);
+    STATE.actions=STATE.actions.filter(x=>x.id!==id);
+    await saveState();
+    renderActions();
+  }
+}
+async function addAction(){
+  const text=document.getElementById('new-action-text').value.trim();
+  const urgency=document.getElementById('new-urgency').value;
+  if(!text)return;
+  const newId=Math.max(0,...STATE.actions.map(a=>a.id))+1;
+  const newAction={id:newId,text,urgency,done:false};
+  STATE.actions.push(newAction);
+  document.getElementById('new-action-text').value='';
+  await saveState();
+  renderActions();
+  await writeActionToDB(newAction);
+}
+document.getElementById('new-action-text').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addAction()}});
+
+// ═══════════════════════
+// RENDER TIMELINE
+// ═══════════════════════
+function renderTimeline(){
+  const track=document.getElementById('timeline-track');
+  track.innerHTML=STATE.timeline.map((t,i)=>`
+    <div class="timeline-item">
+      ${i<STATE.timeline.length-1?'<div class="timeline-line"></div>':''}
+      <div class="timeline-date">${t.date}</div>
+      <div class="timeline-dot ${t.status}"><div class="timeline-tooltip">${t.detail||''}</div></div>
+      <div class="timeline-label"><div class="timeline-event-name">${t.event}</div></div>
+    </div>`).join('');
+  document.getElementById('milestones').innerHTML=STATE.timeline.map(t=>`
+    <div class="card" style="display:flex;gap:12px;align-items:flex-start">
+      <div style="min-width:64px;font-size:11px;color:var(--gold);font-weight:500;padding-top:2px;flex-shrink:0">${t.date}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500;color:var(--text)">${t.event}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:3px;line-height:1.5">${t.detail||''}</div>
+      </div>
+      <span style="font-size:10px;padding:3px 8px;border-radius:10px;flex-shrink:0;
+        background:${t.status==='done'?'rgba(76,175,80,0.15)':t.status==='tentative'?'rgba(224,154,58,0.15)':t.status==='future'?'rgba(136,136,128,0.1)':'rgba(196,151,62,0.15)'};
+        color:${t.status==='done'?'var(--green)':t.status==='tentative'?'var(--amber)':t.status==='future'?'var(--text-muted)':'var(--gold)'}"
+      >${t.status==='done'?'✓ Done':t.status==='tentative'?'Tentative':t.status==='future'?'Future':'Booked'}</span>
+    </div>`).join('');
+}
+
+// ═══════════════════════
+// RENDER SAMMAP
+// ═══════════════════════
+let activeFilter='all';
+const CAT_COLORS={medical:'#e8585a',therapy:'#9b59b6',beauty:'#e91e8c',wellness:'#4caf50',admin:'#4a9eda'};
+const RING_R=[0,90,165,235,305];
+function buildSamMap(){
+  const W=340,H=340,cx=W/2,cy=H/2;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="max-width:100%">`;
+  svg+=`<circle cx="${cx}" cy="${cy}" r="${W/2-4}" fill="rgba(5,5,10,0.8)" stroke="rgba(196,151,62,0.08)" stroke-width="1"/>`;
+  [1,2,3,4].forEach(r=>{svg+=`<circle cx="${cx}" cy="${cy}" r="${RING_R[r]}" fill="none" stroke="rgba(196,151,62,0.12)" stroke-width="1" stroke-dasharray="4,4"/>`});
+  const rl=['Walk','Short Drive','20-40 min','45+ min'];
+  [1,2,3,4].forEach((r,i)=>{svg+=`<text x="${cx+RING_R[r]+4}" y="${cy+3}" fill="rgba(196,151,62,0.3)" font-size="7" font-family="Montserrat">${rl[i]}</text>`});
+  svg+=`<circle cx="${cx}" cy="${cy}" r="14" fill="rgba(196,151,62,0.2)" stroke="var(--gold)" stroke-width="1.5"/>`;
+  svg+=`<text x="${cx}" y="${cy+1}" text-anchor="middle" dominant-baseline="middle" fill="#e8c97a" font-size="9" font-family="Montserrat" font-weight="500">SAM</text>`;
+  STATE.sammap_providers.forEach(p=>{
+    if(activeFilter!=='all'&&p.cat!==activeFilter)return;
+    const rad=(p.angle-90)*Math.PI/180;
+    const r=RING_R[p.ring];
+    const px=cx+r*Math.cos(rad),py=cy+r*Math.sin(rad);
+    const col=CAT_COLORS[p.cat]||'#888';
+    const w=p.name.split(' ');
+    const label=(w[0]==='Dr'||w[0]==='Prof.')?w[0]+' '+w[w.length-1]:w.length>2?w.slice(0,2).join(' '):p.name;
+    svg+=`<g class="provider-node" onclick="showProvider(${p.id})" style="cursor:pointer">`;
+    svg+=`<circle class="dot" cx="${px}" cy="${py}" r="6" fill="${col}" opacity="0.9" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>`;
+    svg+=`<text x="${px}" y="${py+14}" text-anchor="middle" fill="${col}" font-size="7.5" font-family="Montserrat" opacity="0.85">${label}</text>`;
+    svg+=`</g>`;
+  });
+  svg+=`</svg>`;
+  document.getElementById('sammap-wrap').innerHTML=svg;
+}
+function filterMap(cat,btn){activeFilter=cat;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active-filter'));btn.classList.add('active-filter');buildSamMap()}
+function showProvider(id){
+  const p=STATE.sammap_providers.find(x=>x.id===id);if(!p)return;
+  const pop=document.getElementById('provider-popup');
+  document.getElementById('pp-name').textContent=p.name;
+  document.getElementById('pp-role').textContent=p.role;
+  document.querySelector('#pp-location span').textContent=p.location;
+  document.querySelector('#pp-phone span').textContent=p.phone||'Not on file';
+  document.querySelector('#pp-freq span').textContent=p.freq||'TBC';
+  pop.classList.add('show');
+}
+function closePopup(){document.getElementById('provider-popup').classList.remove('show')}
+
+// ═══════════════════════
+// RENDER SAMWEEK
+// ═══════════════════════
+const ACT_CAT_DOTS={sleep:'#8888cc',wake:'#c4973e',meditate:'#c39bd3',yoga:'#81c784',braingames:'#7ec8f5',walk:'#66bb6a',smoothie:'#ffcc80',pilates:'#90caf9',food:'#c4973e',housekeeper:'#90a4ae',massage:'#f48fb1',calm:'#80cbc4',nap:'#90a4ae',therapy:'#ce93d8',medical:'#ef9a9a',beach:'#80deea',beauty:'#f48fb1',gym:'#90caf9',kids:'#ffcc80',cuddle:'#f48fb1',outdoors:'#80deea'};
+let selectedDay='Monday';
+
+function renderWeekOverview(){
+  const today=new Date().toLocaleString('en-US',{timeZone:'Australia/Sydney',weekday:'long'});
+  document.getElementById('week-overview').innerHTML=DAYS.map(d=>{
+    const acts=[...new Set(SAM_WEEK[d].map(a=>a.type))].slice(0,5);
+    const isToday=d===today;
+    const isSel=d===selectedDay;
+    return `<div class="day-card ${isSel?'active':''} ${isToday?'today-card':''}" onclick="selectDay('${d}')">
+      <div class="day-name">${d.slice(0,3).toUpperCase()}</div>
+      <div class="day-dots">${acts.map(t=>`<div class="day-dot" style="background:${ACT_CAT_DOTS[t]||'#555'}"></div>`).join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+function selectDay(day){
+  selectedDay=day;
+  renderWeekOverview();
+  document.getElementById('selected-day-label').textContent=day;
+  renderDaySchedule(day);
+}
+
+function renderDaySchedule(day){
+  const sched=SAM_WEEK[day]||[];
+  const wrap=document.getElementById('schedule-wrap');
+  wrap.innerHTML=sched.map(block=>{
+    const heightPx=Math.max(36,(block.dur||1)*20);
+    return `<div class="schedule-block" style="min-height:${heightPx}px">
+      <div class="schedule-time">${block.time}</div>
+      <div class="schedule-activity act-${block.type}" style="min-height:${heightPx}px">
+        <div>
+          <div class="activity-name">${block.name}</div>
+          ${block.detail?`<div class="activity-detail">${block.detail}</div>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function initSamWeek(){
+  const today=new Date().toLocaleString('en-US',{timeZone:'Australia/Sydney',weekday:'long'});
+  selectedDay=DAYS.includes(today)?today:'Monday';
+  renderWeekOverview();
+  document.getElementById('selected-day-label').textContent=selectedDay;
+  renderDaySchedule(selectedDay);
+}
+
+// ═══════════════════════
+// RENDER THREADS
+// ═══════════════════════
+function renderThreads(){
+  document.getElementById('threads-list').innerHTML=STATE.threads.map(t=>`
+    <div class="thread-card">
+      <div class="thread-status-dot ${t.status}"></div>
+      <div style="flex:1">
+        <div class="thread-person">${t.person}</div>
+        <div class="thread-topic">${t.topic}</div>
+        <div class="thread-updated">Last: ${t.updated}</div>
+      </div>
+      <span style="font-size:10px;padding:3px 8px;border-radius:10px;flex-shrink:0;
+        background:${t.status==='urgent'?'rgba(229,69,69,0.12)':t.status==='resolved'?'rgba(76,175,80,0.12)':'rgba(224,154,58,0.12)'};
+        color:${t.status==='urgent'?'var(--red)':t.status==='resolved'?'var(--green)':'var(--amber)'}">
+        ${t.status==='urgent'?'Urgent':t.status==='resolved'?'✓ Done':'Waiting'}
+      </span>
+    </div>`).join('');
+}
+
+// ═══════════════════════
+// RENDER FINANCIAL v3
+// ═══════════════════════
+function renderFinancial(){
+  const income=[
+    {name:"Avantaus Salary",val:250000,max:615000,color:"var(--gold)",entity:"ANZ 5644"},
+    {name:"Commissions (100 lots)",val:150000,max:615000,color:"#e8c97a",entity:"Cross Properties"},
+    {name:"NDIS — Cross Express",val:120000,max:615000,color:"var(--blue)",entity:"GSB 51570363"},
+    {name:"Sam Consulting",val:95000,max:615000,color:"#9b59b6",entity:"Cross Properties"},
+  ];
+  document.getElementById('income-bars').innerHTML=income.map(i=>`
+    <div class="income-bar-row">
+      <div class="income-bar-label">
+        <span class="income-bar-name">${i.name} <span style="font-size:9px;color:var(--text-muted)">· ${i.entity}</span></span>
+        <span class="income-bar-val">$${(i.val/1000).toFixed(0)}k</span>
+      </div>
+      <div class="income-bar-track">
+        <div class="income-bar-fill" style="width:$x(i.val/i.max*100).toFixed(1)}%;background:${i.color}"></div>
+      </div>
+    </div>`).join('');
+
+  const samDebts=[
+    {label:"ATO",amount:"~$40k",status:"urgent"},
+    {label:"Credit Corp",amount:"TBC",status:"waiting"},
+    {label:"Penrith Christian School",amount:"TBC",status:"waiting"},
+    {label:"ARMA",amount:"TBC",status:"waiting"},
+    {label:"Child Support",amount:"TBC",status:"waiting"},
+    {label:"AAMI / Tolls",amount:"TBC",status:"waiting"},
+  ];
+  document.getElementById('sam-debt-list').innerHTML=samDebts.map(d=>`
+    <div class="scott-item">
+      <div class="scott-num" style="background:rgba(229,69,69,0.1);color:var(--red)">$</div>
+      <div>
+        <div class="scott-text">${d.label}</div>
+        <div class="scott-detail">${d.amount}</div>
+      </div>
+      <span style="font-size:10px;padding:2px 7px;border-radius:8px;
+        background:${d.status==='urgent'?'rgba(229,69,69,0.12)':'rgba(224,154,58,0.08)'};
+        color:${d.status==='urgent'?'var(--red)':'var(--amber)'}">
+        ${d.status==='urgent'?'Urgent':'Confirm'}
+      </span>
+    </div>`).join('');
+
+  const scottItems=[
+    {n:1,text:"Divorce debt — ~$400k to parents",detail:"Finalised ~Oct 2016. Locate divorce paperwork. Confirm outstanding balance."},
+    {n:2,text:"Mum loan — ~$250k",detail:"Borrowed 2017 or 2018. Locate bank statement or loan agreement."},
+    {n:3,text:"Mortgage interest on sold properties",detail:"Calculate and declare interest on all sold investment properties."},
+    {n:4,text:"Crypto losses — CoinSpot",detail:"Personal + SMSF accounts. Extract all losses. Factor into tax position."},
+    {n:5,text:"Bank statements — all entities",detail:"Back to 2017/2018. Categorise expenses, identify all deductions."},
+    {n:6,text:"ATO tax agent linking",detail:"Scott to link across all entities via myID. ATO portal check."},
+  ];
+  document.getElementById('scott-items').innerHTML=scottItems.map(i=>`
+    <div class="scott-item">
+      <div class="scott-num">${i.n}</div>
+      <div><div class="scott-text">${i.text}</div><div class="scott-detail">${i.detail}</div></div>
+    </div>`).join('');
+}
+
+// ═══════════════════════
+// RENDER COMPASS
+// ═══════════════════════
+function renderCompass(){
+  document.getElementById('compass-grid').innerHTML=STATE.compass.map(e=>`
+    <div class="compass-card">
+      <div class="compass-num">${e.num} <span class="status-dot ${e.status}"></span></div>
+      <div class="compass-name">${e.name}</div>
+      <div class="compass-tagline">${e.tagline}</div>
+    </div>`).join('');
+}
+
+// ═══════════════════════
+// RENDER ALL
+// ═══════════════════════
+function renderAll(){
+  renderActions();
+  renderTimeline();
+  buildSamMap();
+  renderThreads();
+  renderFinancial();
+  renderCompass();
+  initSamWeek();
+}
+
+// ═══════════════════════
+// AI CHAT — ANTHROPIC API
+// ═══════════════════════
+function openChat(){
+  document.getElementById('chat-overlay').classList.add('show');
+  document.getElementById('chat-panel').classList.add('show');
+  setTimeout(()=>document.getElementById('chat-input').focus(),300);
+}
+function closeChat(){
+  document.getElementById('chat-overlay').classList.remove('show');
+  document.getElementById('chat-panel').classList.remove('show');
+}
+function addMsg(type,text){
+  const msgs=document.getElementById('chat-messages');
+  const div=document.createElement('div');
+  div.className='msg '+type;
+  div.textContent=text;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+function showTyping(){
+  const msgs=document.getElementById('chat-messages');
+  const div=document.createElement('div');
+  div.className='msg ai';
+  div.innerHTML='<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+  div.id='typing';
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+function removeTyping(){const t=document.getElementById('typing');if(t)t.remove()}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}}
+
+let chatHistory=[];
+
+async function sendMessage(){
+  const input=document.getElementById('chat-input');
+  const text=input.value.trim();
+  if(!text)return;
+  input.value='';
+  input.style.height='auto';
+  addMsg('user',text);
+  document.getElementById('chat-send').disabled=true;
+  showTyping();
+  chatHistory.push({role:'user',content:text});
+
+  const snap=STATE.dbSnapshot||{};
+  const allActions=(snap.actions&&snap.actions.length>0)?snap.actions:STATE.actions;
+  const systemPrompt=`You are MrAI — life management partner and Command Centre editor for Sasha Cross. Address him as mate. Be concise and direct.
+
+IDENTITY:
+- Sasha Cross (DOB 2 Oct 1974, ENTJ-A, Life Path 6, Tiger, Libra) — Unit 6A, 2 Watermans Quay, Barangaroo NSW 2000
+- Sales & Marketing Director, Avantaus Pty Ltd, Level 40, 100 Barangaroo Ave, Sydney
+- Licensee In Charge, Cross Properties Pty Ltd
+- Salary: $250k/yr + super + $1,500/lot commission. 2026 target: 100 lots = $150k commission
+- 2026 projected gross: $615k (salary $250k + commissions $150k + NDIS $120k + Sam consulting $95k)
+
+FAMILY:
+- Wife: Samantha Cross (DOB 13 Aug 1986) — tumefactive MS + ADHD + BPD. arTMS treatment May 2026.
+- Children: Levi (DOB 10 Apr 2012), Ava Adams, Axel (DOB 16 Sep 2010, strained), Isabella Copper
+
+FRAMEWORK:
+- Inner OS: Neville Goddard. Outer OS: Vision > Objective > Strategy > Action Plan > Execution > Review
+- Order: Consciousness first, Body second, Work third
+
+FINANCIAL:
+- CPFT ANZ 1391: $457,773 (warehouse sale Nov 2025)
+- ATO debt: ~$500k across entities. GIC accruing daily.
+- Sam personal debt: ~$86k. Scott Williams (Tribel) — tax agent.
+- Max plan (Anthropic) renews 13 Apr 2026.
+${snap.financial&&snap.financial.length>0?'FINANCIAL SHEET DATA:\n'+snap.financial.map(r=>r.join(' | ')).join('\n'):''}
+
+KEY CONTACTS:
+- Yan Lu (MD Avantaus) | Chao Gao FC (0415 160 708) | Marc Saadie Thomson Geer legal
+- Scott Williams Tribel (scott.williams@tribel.com.au) | Gillian Harbulot Leverage CPP41419
+- Denise Lawler NDIS | Dr Kanny Hannah (Sam psychologist) | Dr Ghadiri MS neurologist | Dr Jayalath arTMS URGENT
+${snap.contacts&&snap.contacts.length>0?'CONTACTS SHEET DATA:\n'+snap.contacts.map(r=>r.join(' | ')).join('\n'):''}
+
+SAM HEALTH DATA:
+- Tumefactive MS (Dr Ghadiri), ADHD + BPD (Dr Kanny Hannah). Ocrevus infusions 6-monthly.
+- arTMS: $750 paid, mapping appt with Dr Jayalath URGENTLY needed, 25 May tentative start.
+- NDIS No: 431817096 | Bupa: 39716451 | Support Coordinator: Denise Lawler
+${snap.sam&&snap.sam.length>0?'SAM SHEET DATA:\n'+snap.sam.map(r=>r.join(' | ')).join('\n'):''}
+
+LIVE DATABASE:
+- Sheets: MASTER_LOG, CONTACTS, ACTIONS, FINANCIAL, SAM, COMPASS, RULES
+- Read: POST to DB_URL with {apiKey, action:'read', sheet:'SHEETNAME'}
+- Write: POST with {apiKey, action:'addRow', sheet:'SHEETNAME', row:[...]}
+- Last sync: ${snap.lastSync||'not yet synced'}
+
+ALL CURRENT ACTIONS (${allActions.length} total):
+${allActions.map((a,i)=>`${i+1}. [${a.urgency==='red'?'🔴 URGENT':a.urgency==='amber'?'🟡 THIS WEEK':'🔵 PLANNED'}${a.done?' ✓DONE':''}] ${a.text}`).join('\n')}
+
+RESPONSE FORMAT — ONLY valid JSON:
+Update actions: {"type":"update","section":"actions","data":[...]}
+Update threads: {"type":"update","section":"threads","data":[...]}
+Update timeline: {"type":"update","section":"timeline","data":[...]}
+Update compass: {"type":"update","section":"compass","data":[...]}
+Text reply: {"type":"message","text":"your reply here"}`;
+
+  try{
+    const res=await fetch('/.netlify/functions/claude',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1500,
+        system:systemPrompt,
+        messages:chatHistory
+      })
+    });
+    const data=await res.json();
+    removeTyping();
+    const raw=data.content?.[0]?.text||'{"type":"message","text":"Something went wrong mate."}';
+    chatHistory.push({role:'assistant',content:raw});
+    let result;
+    try{const m=raw.match(/\{[\s\S]*\}/);result=JSON.parse(m?m[0]:raw)}
+    catch(e){result={type:'message',text:raw}}
+    if(result.type==='update'&&result.section&&result.data){
+      const oldActions=result.section==='actions'?[...STATE.actions]:null;
+      STATE[result.section]=result.data;
+      await saveState();
+      renderAll();
+      // v6: write action changes back to DB
+      if(result.section==='actions'&&oldActions){
+        for(const a of result.data){
+          const old=oldActions.find(o=>o.text===a.text);
+          if(!old){await writeActionToDB(a)}
+          else if(!old.done&&a.done){await writeActionToDB(a)}
+        }
+      }
+      addMsg('ai','✓ Done mate — '+result.section+' updated & synced to DB.');
+    }else{
+      addMsg('ai',result.text||raw);
+    }
+  }catch(e){
+    removeTyping();
+    addMsg('ai','API connection error. Check you\'re on a supported network mate.');
+    chatHistory.pop();
+  }
+  document.getElementById('chat-send').disabled=false;
+}
+
+document.getElementById('chat-input').addEventListener('input',function(){
+  this.style.height='auto';
+  this.style.height=Math.min(this.scrollHeight,80)+'px';
+});
+
+// ═══════════════════════
+// INIT
+// ═══════════════════════
+async function manualSync(){
+  const btn=document.getElementById('sync-btn');
+  if(btn){btn.textContent='⟳ Syncing...';btn.disabled=true}
+  await loadFromDB(false);
+  if(btn){btn.textContent='⟳ SYNC';btn.disabled=false}
+}
+
+async function loadFromDB(silent=false){
+  const welcome=document.getElementById('chat-welcome');
+  if(!silent&&welcome)welcome.textContent='✦ MrAI v6 — syncing all database sheets...';
+  try{
+    const post=(sheet)=>fetch(DB_URL,{method:'POST',body:JSON.stringify({apiKey:DB_KEY,action:'read',sheet})}).then(r=>r.json());
+    const [dA,dC,dF,dS,dL,dCo,dR]=await Promise.all([
+      post('ACTIONS'),post('CONTACTS'),post('FINANCIAL'),post('SAM'),post('MASTER_LOG'),post('COMPASS'),post('RULES')
+    ]);
+    if(dA.status==='success'&&dA.rows&&dA.rows.length>1){
+      const rows=dA.rows.slice(1);
+      // Find deleted texts — never show these again
+      const deletedTexts=rows.filter(r=>(r[6]||'').toUpperCase()==='DELETED').map(r=>r[2]);
+      // Merge with locally tracked deletions
+      const allDeleted=[...deletedTexts,...(STATE.deletedTexts||[])];
+      const dbActions=rows.filter(r=>r[0]&&r[2]&&!allDeleted.includes(r[2])&&(r[0]||'').toUpperCase()!=='DELETED').map((r,i)=>({
+        id:Date.now()+i,
+        text:r[2]+(r[4]?(' — '+r[4]):''),
+        urgency:r[0].includes('🔴')?'red':r[0].includes('🟡')?'amber':'blue',
+        done:(r[6]||'').toUpperCase()==='DONE'
+      }));
+      if(dbActions.length>0){
+        const localDone=STATE.actions.filter(a=>a.done).map(a=>a.text.substring(0,30));
+        STATE.actions=dbActions.map(a=>({...a,done:a.done||localDone.some(t=>a.text.startsWith(t))}));
+        STATE.dbLoaded=true;
+        renderActions();
+      }
+    }
+    if(!STATE.dbSnapshot)STATE.dbSnapshot={};
+    const parseRows=(d)=>(d.status==='success'&&d.rows&&d.rows.length>1)?d.rows.slice(1).filter(r=>r.some(c=>c)):[];
+    STATE.dbSnapshot.actions=parseRows(dA);
+    STATE.dbSnapshot.contacts=parseRows(dC);
+    STATE.dbSnapshot.financial=parseRows(dF);
+    STATE.dbSnapshot.sam=parseRows(dS);
+    STATE.dbSnapshot.log=parseRows(dL);
+    STATE.dbSnapshot.compass=parseRows(dCo);
+    STATE.dbSnapshot.rules=parseRows(dR);
+    STATE.dbSnapshot.lastSync=new Date().toLocaleString('en-AU',{timeZone:'Australia/Sydney'});
+    await saveState();
+    const actionCount=STATE.actions.filter(a=>!a.done).length;
+    const contactCount=STATE.dbSnapshot.contacts.length;
+    if(!silent&&welcome)welcome.textContent=`✦ MrAI v6 live — ${actionCount} open actions | ${contactCount} contacts | all sheets loaded. What do you need, mate?`;
+  }catch(e){
+    if(!silent&&welcome)welcome.textContent='✦ MrAI v6 ready — offline mode. Type anything, mate.';
+    console.error('loadFromDB error:',e);
+  }
+}
+
+loadState().then(()=>loadFromDB());
+</script>
+</body>
+</html>
