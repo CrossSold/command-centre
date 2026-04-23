@@ -610,17 +610,7 @@ const DEFAULT_DATA={
     {id:6,person:"Belinda Clarke — Best Brains",topic:"arTMS 25 May tentative. $750 paid. Mapping appointment must be booked ASAP.",status:"urgent",updated:"5 Apr 2026"},
     {id:7,person:"Gillian Harbulot — Leverage",topic:"CPP41419 both enrolled ✅. April cohort 14-23 Apr, 9am-5pm. Zoom Impact workshop.",status:"resolved",updated:"5 Apr 2026"},
   ],
-  timeline:[
-    {date:"10 Apr",event:"Physio — Liam",status:"upcoming",detail:"Mojo Physio Co, Rozelle. 8:00–8:45am. Sam with Liam Rheinberger — exercise physiology."},
-    {date:"14–16 Apr",event:"Leverage Zoom 1",status:"upcoming",detail:"CPP41419 Certificate IV. Both Sasha + Sam enrolled. 9am–5pm AEST. Zoom Impact Workshop."},
-    {date:"21 Apr",event:"MRI Brain & Spine",status:"upcoming",detail:"I-MED Miranda, 533 Kingsway. 5:30pm. Referral Dr Ghadiri. Note: outside Sam's best window."},
-    {date:"21–23 Apr",event:"Leverage Zoom 2",status:"upcoming",detail:"CPP41419 Certificate IV. Days 4–6. 9am–5pm AEST."},
-    {date:"29 Apr",event:"Dr Ghadiri",status:"upcoming",detail:"Sydney Neurology, Level 4, 94 Mallett St Camperdown. 9am. Reviews MRI + bloods. Facial pain discussed."},
-    {date:"12 May",event:"Ocrevus Infusion 3",status:"upcoming",detail:"RPA Hospital, Missenden Rd Camperdown. 8am–2pm. Sasha to arrange transport. Full day."},
-    {date:"15 May",event:"Jeli Birthday",status:"upcoming",detail:"Isabella's birthday — plan something."},
-    {date:"25 May",event:"arTMS Week 1",status:"tentative",detail:"Best Brains & Minds, Hornsby. $750 paid. Mapping appointment MUST be booked first ⚠️"},
-    {date:"~Nov 2026",event:"Ocrevus Infusion 4",status:"future",detail:"RPA Hospital. Book ~May 2026. Dr Ghadiri treating."},
-  ],
+  timeline:[],  // v1.3.0: DB-driven from TIMELINE sheet (loaded via loadFromDB)
   sammap_providers:[
     {id:1,name:"Dr Kanny Hannah",role:"Psychologist — ADHD",cat:"therapy",ring:3,angle:255,location:"MyHealth Leichhardt, Shop 55D Marketplace",phone:"02 9560 2525",freq:"Every 2nd Tuesday"},
     {id:2,name:"Dr Nalinaa Kanapathipillai",role:"GP",cat:"medical",ring:3,angle:245,location:"MyHealth Leichhardt",phone:"02 9560 2525",freq:"Monthly"},
@@ -1077,7 +1067,7 @@ function renderFinancial(){
         <span class="income-bar-val">$${(i.val/1000).toFixed(0)}k</span>
       </div>
       <div class="income-bar-track">
-        <div class="income-bar-fill" style="width:$x(i.val/i.max*100).toFixed(1)}%;background:${i.color}"></div>
+        <div class="income-bar-fill" style="width:${(i.val/i.max*100).toFixed(1)}%;background:${i.color}"></div>
       </div>
     </div>`).join('');
 
@@ -1306,8 +1296,8 @@ async function loadFromDB(silent=false){
   if(!silent&&welcome)welcome.textContent='✦ MrAI v6 — syncing all database sheets...';
   try{
     const post=(sheet)=>fetch(DB_URL,{method:'POST',body:JSON.stringify({apiKey:DB_KEY,action:'read',sheet})}).then(r=>r.json());
-    const [dA,dC,dF,dS,dL,dCo,dR]=await Promise.all([
-      post('ACTIONS'),post('CONTACTS'),post('FINANCIAL'),post('SAM'),post('MASTER_LOG'),post('COMPASS'),post('RULES')
+    const [dA,dC,dF,dS,dL,dCo,dR,dT]=await Promise.all([
+      post('ACTIONS'),post('CONTACTS'),post('FINANCIAL'),post('SAM'),post('MASTER_LOG'),post('COMPASS'),post('RULES'),post('TIMELINE')
     ]);
     if(dA.status==='success'&&dA.rows&&dA.rows.length>1){
       const rows=dA.rows.slice(1);
@@ -1329,6 +1319,27 @@ async function loadFromDB(silent=false){
       }
     }
     if(!STATE.dbSnapshot)STATE.dbSnapshot={};
+    // v1.3.0: TIMELINE from DB — date(ISO)/time/event/status/category/location/detail
+    if(dT&&dT.status==='success'&&dT.rows&&dT.rows.length>1){
+      const rows=dT.rows.slice(1);
+      const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      STATE.timeline=rows.filter(r=>r[0]&&r[2]).map(r=>{
+        const dateStr=String(r[0]||'');
+        let displayDate=dateStr;
+        try{
+          const d=new Date(dateStr);
+          if(!isNaN(d.getTime())){displayDate=d.getDate()+' '+MONTHS[d.getMonth()]}
+        }catch(e){}
+        const rawStatus=String(r[3]||'').toUpperCase();
+        const mapped=rawStatus==='DONE'?'done':rawStatus==='TENTATIVE'||rawStatus==='DEADLINE'?'tentative':rawStatus==='FUTURE'?'future':'upcoming';
+        const timeStr=r[1]?String(r[1]).trim():'';
+        const location=r[5]?String(r[5]).trim():'';
+        const extra=r[6]?String(r[6]).trim():'';
+        const detail=[timeStr,location,extra].filter(Boolean).join(' — ');
+        return {date:displayDate,event:String(r[2]),status:mapped,detail:detail};
+      });
+      renderTimeline();
+    }
     const parseRows=(d)=>(d.status==='success'&&d.rows&&d.rows.length>1)?d.rows.slice(1).filter(r=>r.some(c=>c)):[];
     STATE.dbSnapshot.actions=parseRows(dA);
     STATE.dbSnapshot.contacts=parseRows(dC);
