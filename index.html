@@ -3,8 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>CC — Command Centre v6</title>
+<title>CC — Command Centre v1.4.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -115,6 +117,40 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .sammap-svg-wrap{width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
 .sammap-svg-wrap svg{max-width:100%;height:auto}
 .provider-node{cursor:pointer;transition:all 0.15s}
+/* SamMap Leaflet container */
+.sammap-map{height:60vh;min-height:360px;width:100%;border-radius:var(--radius);border:1px solid var(--gold-border);overflow:hidden;background:#0a0a14}
+.sammap-map .leaflet-container{background:#0c0c14;font-family:var(--font-body);height:100%;width:100%}
+.sammap-map .leaflet-tile{filter:brightness(0.72) contrast(1.05) saturate(0.7) hue-rotate(-10deg)}
+.sammap-map .leaflet-control-attribution{background:rgba(12,12,20,0.85);color:var(--text-muted);font-size:9px;padding:2px 6px}
+.sammap-map .leaflet-control-attribution a{color:var(--gold)}
+.sammap-map .leaflet-control-zoom a{background:var(--bg3);color:var(--gold);border:1px solid var(--gold-border)}
+.sammap-map .leaflet-control-zoom a:hover{background:var(--bg4);color:var(--gold-light)}
+.cc-marker{display:flex;align-items:center;justify-content:center;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.6);font-size:10px;color:#fff;font-weight:600;text-align:center;line-height:1}
+.cc-popup .leaflet-popup-content-wrapper{background:var(--bg4);color:var(--text);border:1px solid var(--gold-border);border-radius:10px;box-shadow:var(--shadow)}
+.cc-popup .leaflet-popup-tip{background:var(--bg4);border:1px solid var(--gold-border)}
+.cc-popup .leaflet-popup-content{margin:12px 14px;font-family:var(--font-body)}
+.cc-popup h4{font-family:var(--font-display);font-size:16px;color:var(--gold-light);margin-bottom:2px;font-weight:500}
+.cc-popup .cc-pop-role{font-size:10px;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.5px}
+.cc-popup .cc-pop-detail{font-size:11px;color:var(--text-dim);margin-bottom:3px;line-height:1.4}
+.cc-popup .cc-pop-detail b{color:var(--gold)}
+.cc-popup .leaflet-popup-close-button{color:var(--text-muted)!important;font-size:18px!important;padding:6px 8px 0 0!important}
+
+/* INLINE EDIT (Item 4) */
+.edit-toggle{margin-left:auto;background:var(--bg3);border:1px solid var(--gold-border);color:var(--gold);padding:5px 10px;border-radius:14px;font-size:10px;font-weight:500;cursor:pointer;letter-spacing:1px;transition:all 0.2s;display:inline-flex;align-items:center;gap:5px}
+.edit-toggle:hover{background:var(--gold-dim)}
+.edit-toggle.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold-light)}
+.edit-toggle .pencil{font-size:11px}
+.editable{cursor:text;transition:background 0.15s;border-radius:4px}
+.edit-mode .editable{background:rgba(196,151,62,0.05);border:1px dashed var(--gold-border);padding:2px 6px;margin:-2px -6px}
+.edit-mode .editable:hover{background:rgba(196,151,62,0.12);border-color:var(--gold)}
+.editing-input{background:var(--bg3);border:1px solid var(--gold);color:var(--text);font-family:var(--font-body);font-size:inherit;padding:4px 8px;border-radius:5px;outline:none;width:100%;box-sizing:border-box}
+.edit-saving{opacity:0.5;pointer-events:none}
+.edit-saved-flash{animation:saved-flash 1.2s ease}
+@keyframes saved-flash{0%{background:rgba(76,175,80,0.3)}100%{background:transparent}}
+.edit-error-flash{animation:err-flash 1.5s ease}
+@keyframes err-flash{0%{background:rgba(229,69,69,0.3)}100%{background:transparent}}
+.edit-banner{font-size:10px;color:var(--gold);padding:6px 12px;background:var(--gold-dim);border:1px dashed var(--gold-border);border-radius:8px;margin-bottom:10px;letter-spacing:1px;text-align:center;display:none}
+.edit-mode .edit-banner{display:block}
 .provider-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg4);border:1px solid var(--gold-border);border-radius:12px;padding:18px 20px;min-width:240px;max-width:90vw;z-index:1000;box-shadow:var(--shadow);display:none}
 .provider-popup.show{display:block}
 .provider-popup h3{font-family:var(--font-display);font-size:18px;color:var(--gold-light);margin-bottom:4px}
@@ -294,7 +330,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 <!-- PASSWORD GATE -->
 <div id="cc-gate" style="position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:40px">
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;color:#e8c97a;margin-bottom:4px">Command Centre</div>
-  <div style="font-size:9px;color:#555550;letter-spacing:3px;margin-bottom:32px">v6 — ATTITUDE DEFINES ALTITUDE</div>
+  <div style="font-size:9px;color:#555550;letter-spacing:3px;margin-bottom:32px">v1.4.0 — ATTITUDE DEFINES ALTITUDE</div>
   <input id="cc-pw" type="password" placeholder="Enter access code"
     style="background:#0c0c14;border:1px solid rgba(196,151,62,0.3);border-radius:8px;padding:12px 18px;color:#f0f0e8;font-size:14px;outline:none;width:240px;text-align:center;font-family:'Montserrat',sans-serif;letter-spacing:2px;margin-bottom:12px"
     onkeydown="if(event.key==='Enter')checkPW()">
@@ -308,7 +344,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
     <div class="header-left">
       <div style="display:flex;align-items:center;gap:8px">
         <h1>Command Centre</h1>
-        <span class="v-badge">V6</span>
+        <span class="v-badge">V1.4.0</span>
       </div>
       <div class="tagline">attitude defines altitude</div>
     </div>
@@ -338,6 +374,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 
     <!-- TAB 1: ACTIONS -->
     <div id="panel-actions" class="panel active">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:6px"><button class="edit-toggle" id="edit-toggle-actions" onclick="toggleEditMode('actions')"><span class="pencil">✎</span><span class="lbl">EDIT</span></button></div>
+      <div class="edit-banner">EDIT MODE — click any item text to edit · changes append to ACTIONS sheet</div>
       <div class="vision-bar">
         <div class="vision-step active">Vision</div>
         <div class="vision-step active">Objective</div>
@@ -374,7 +412,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
       <div id="milestones"></div>
     </div>
 
-    <!-- TAB 3: SAMMAP -->
+    <!-- TAB 3: SAMMAP (v1.4.0 — Leaflet + OSM) -->
     <div id="panel-sammap" class="panel">
       <div class="sammap-filters" id="sammap-filters">
         <button class="filter-btn all active-filter" onclick="filterMap('all',this)">All</button>
@@ -384,15 +422,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
         <button class="filter-btn wellness" onclick="filterMap('wellness',this)">Wellness</button>
         <button class="filter-btn admin" onclick="filterMap('admin',this)">Admin</button>
       </div>
-      <div class="sammap-svg-wrap" id="sammap-wrap"></div>
-      <div class="provider-popup" id="provider-popup">
-        <span class="close-btn" onclick="closePopup()">×</span>
-        <h3 id="pp-name"></h3>
-        <div class="role" id="pp-role"></div>
-        <div class="detail" id="pp-location">📍 <span></span></div>
-        <div class="detail" id="pp-phone">📞 <span></span></div>
-        <div class="detail" id="pp-freq">🗓 <span></span></div>
-      </div>
+      <div id="sammap-map" class="sammap-map"></div>
+      <div id="sammap-geocode-note" style="font-size:9px;color:var(--text-muted);margin-top:6px;letter-spacing:0.5px;text-align:right"></div>
     </div>
 
     <!-- TAB 4: SAM WEEK (NEW v3) -->
@@ -428,23 +459,27 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 
     <!-- TAB 5: THREADS -->
     <div id="panel-threads" class="panel">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:6px"><button class="edit-toggle" id="edit-toggle-threads" onclick="toggleEditMode('threads')"><span class="pencil">✎</span><span class="lbl">EDIT</span></button></div>
+      <div class="edit-banner">EDIT MODE — click any thread field to edit · changes logged to MASTER_LOG (no THREADS sheet exists)</div>
       <div class="section-label">Open Threads</div>
       <div id="threads-list"></div>
     </div>
 
-    <!-- TAB 6: FINANCIAL (v3 upgraded) -->
+    <!-- TAB 6: FINANCIAL (v1.4.0 — DB-driven) -->
     <div id="panel-financial" class="panel">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:6px"><button class="edit-toggle" id="edit-toggle-financial" onclick="toggleEditMode('financial')"><span class="pencil">✎</span><span class="lbl">EDIT</span></button></div>
+      <div class="edit-banner">EDIT MODE — click any value to edit · changes append to FINANCIAL sheet</div>
 
-      <!-- Top 2 cards -->
+      <!-- Top 2 cards (v1.4.0 — DB-driven) -->
       <div class="fin-grid">
         <div class="fin-card">
           <div class="label">CPFT Balance</div>
-          <div class="value" style="color:var(--gold-light)">$457k</div>
+          <div class="value" style="color:var(--gold-light)" data-cc-cpft>$457k</div>
           <div class="sub">ANZ 1391 — warehouse sale</div>
         </div>
         <div class="fin-card">
           <div class="label">ATO Debt (est.)</div>
-          <div class="value" style="color:var(--red)">~$500k</div>
+          <div class="value" style="color:var(--red)" data-cc-ato>~$500k</div>
           <div class="sub">GIC accruing daily</div>
         </div>
       </div>
@@ -493,7 +528,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
       <div id="income-bars"></div>
       <div style="background:var(--bg3);border:1px solid var(--gold-border);border-radius:var(--radius);padding:16px;text-align:center;margin:12px 0">
         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px">Total Projected Gross</div>
-        <div style="font-family:var(--font-display);font-size:42px;color:var(--gold-light);font-weight:300">$615k</div>
+        <div style="font-family:var(--font-display);font-size:42px;color:var(--gold-light);font-weight:300" data-cc-total>$615k</div>
         <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Salary + Commissions + NDIS + Consulting</div>
       </div>
 
@@ -524,7 +559,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 <div class="chat-panel" id="chat-panel">
   <div class="chat-drag"></div>
   <div class="chat-header">
-    <h3>✦ MrAI — v6</h3>
+    <h3>✦ MrAI — v1.4.0</h3>
     <div style="display:flex;gap:8px;align-items:center">
       <button onclick="loadFromDB()" style="background:none;border:1px solid var(--gold-border);color:var(--gold);border-radius:12px;padding:3px 10px;font-size:10px;cursor:pointer;letter-spacing:1px">⟳ SYNC</button>
       <span class="close" onclick="closeChat()">×</span>
@@ -612,21 +647,21 @@ const DEFAULT_DATA={
   ],
   timeline:[],  // v1.3.0: DB-driven from TIMELINE sheet (loaded via loadFromDB)
   sammap_providers:[
-    {id:1,name:"Dr Kanny Hannah",role:"Psychologist — ADHD",cat:"therapy",ring:3,angle:255,location:"MyHealth Leichhardt, Shop 55D Marketplace",phone:"02 9560 2525",freq:"Every 2nd Tuesday"},
-    {id:2,name:"Dr Nalinaa Kanapathipillai",role:"GP",cat:"medical",ring:3,angle:245,location:"MyHealth Leichhardt",phone:"02 9560 2525",freq:"Monthly"},
-    {id:3,name:"Dr Sajeeva Jayalath",role:"Psychiatrist — arTMS",cat:"medical",ring:4,angle:10,location:"Best Brains & Minds, Suite 20, 25-29 Hunter St Hornsby",phone:"02 8317 5440",freq:"6-weekly"},
-    {id:4,name:"Dr Mahtab Ghadiri",role:"MS Neurologist",cat:"medical",ring:3,angle:205,location:"Sydney Neurology, Level 4, 94 Mallett St Camperdown",phone:"9351 0730",freq:"Bi-annual"},
-    {id:5,name:"Mette Juel Stanbury",role:"Occupational Therapist",cat:"therapy",ring:1,angle:180,location:"In-home — Barangaroo",phone:"0455 615 858",freq:"Fortnightly"},
-    {id:6,name:"Liam Rheinberger",role:"Physio / Exercise Physiology",cat:"therapy",ring:2,angle:200,location:"Mojo Physio Co, Rozelle",phone:"0400 324 173",freq:"Weekly"},
-    {id:7,name:"Denise Lawler",role:"NDIS Support Coordinator",cat:"admin",ring:4,angle:230,location:"PO Box 127 Moorebank NSW 1875",phone:"0401 737 855",freq:"Fortnightly"},
-    {id:8,name:"Prof. Goodwin",role:"Cancer Genetics",cat:"medical",ring:3,angle:195,location:"RPA, Missenden Rd Camperdown",phone:"02 9515 8780",freq:"Annual"},
-    {id:9,name:"Jackie's Sports Massage",role:"Massage Therapy",cat:"therapy",ring:1,angle:150,location:"Level 6, 185 Elizabeth St Sydney",phone:"02 9261 4071",freq:"Weekly"},
-    {id:10,name:"Lash Blossom",role:"Lash Extensions",cat:"beauty",ring:1,angle:60,location:"Level 8, 428 George St Sydney",phone:"0415 706 836",freq:"Monthly"},
-    {id:11,name:"Soma Collective",role:"Pilates",cat:"wellness",ring:1,angle:30,location:"88 Phillip St Sydney",phone:"",freq:"Weekly"},
-    {id:12,name:"Status Co",role:"Hair & Makeup",cat:"beauty",ring:1,angle:330,location:"100 Barangaroo Ave",phone:"",freq:"Monthly"},
-    {id:13,name:"I-MED Radiology Miranda",role:"MRI — MS Imaging",cat:"medical",ring:4,angle:170,location:"533 Kingsway Miranda NSW 2228",phone:"02 9525 6055",freq:"Bi-annual"},
-    {id:14,name:"Calm Bar",role:"Cold Bath Therapy",cat:"wellness",ring:2,angle:220,location:"Rozelle",phone:"1800 971 711",freq:"Weekly"},
-    {id:15,name:"California Nails",role:"Nails",cat:"beauty",ring:1,angle:90,location:"200 Barangaroo Ave",phone:"",freq:"Every 3 weeks"},
+    {id:1,name:"Dr Kanny Hannah",role:"Psychologist — ADHD",cat:"therapy",lat:-33.8830,lng:151.1565,location:"MyHealth Leichhardt, Shop 55D Marketplace",phone:"02 9560 2525",freq:"Every 2nd Tuesday"},
+    {id:2,name:"Dr Nalinaa Kanapathipillai",role:"GP",cat:"medical",lat:-33.8832,lng:151.1567,location:"MyHealth Leichhardt",phone:"02 9560 2525",freq:"Monthly"},
+    {id:3,name:"Dr Sajeeva Jayalath",role:"Psychiatrist — arTMS",cat:"medical",lat:-33.7041,lng:151.0992,location:"Best Brains & Minds, Suite 20, 25-29 Hunter St Hornsby",phone:"02 8317 5440",freq:"6-weekly"},
+    {id:4,name:"Dr Mahtab Ghadiri",role:"MS Neurologist",cat:"medical",lat:-33.8893,lng:151.1788,location:"Sydney Neurology, Level 4, 94 Mallett St Camperdown",phone:"9351 0730",freq:"Bi-annual"},
+    {id:5,name:"Mette Juel Stanbury",role:"Occupational Therapist",cat:"therapy",lat:-33.8620,lng:151.2008,location:"In-home — Barangaroo",phone:"0455 615 858",freq:"Fortnightly"},
+    {id:6,name:"Liam Rheinberger",role:"Physio / Exercise Physiology",cat:"therapy",lat:-33.8593,lng:151.1683,location:"Mojo Physio Co, Rozelle",phone:"0400 324 173",freq:"Weekly"},
+    {id:7,name:"Denise Lawler",role:"NDIS Support Coordinator",cat:"admin",lat:-33.9595,lng:150.9446,location:"PO Box 127 Moorebank NSW 1875",phone:"0401 737 855",freq:"Fortnightly"},
+    {id:8,name:"Prof. Goodwin",role:"Cancer Genetics",cat:"medical",lat:-33.8884,lng:151.1819,location:"RPA, Missenden Rd Camperdown",phone:"02 9515 8780",freq:"Annual"},
+    {id:9,name:"Jackie's Sports Massage",role:"Massage Therapy",cat:"therapy",lat:-33.8755,lng:151.2105,location:"Level 6, 185 Elizabeth St Sydney",phone:"02 9261 4071",freq:"Weekly"},
+    {id:10,name:"Lash Blossom",role:"Lash Extensions",cat:"beauty",lat:-33.8696,lng:151.2073,location:"Level 8, 428 George St Sydney",phone:"0415 706 836",freq:"Monthly"},
+    {id:11,name:"Soma Collective",role:"Pilates",cat:"wellness",lat:-33.8644,lng:151.2128,location:"88 Phillip St Sydney",phone:"",freq:"Weekly"},
+    {id:12,name:"Status Co",role:"Hair & Makeup",cat:"beauty",lat:-33.8618,lng:151.2012,location:"100 Barangaroo Ave",phone:"",freq:"Monthly"},
+    {id:13,name:"I-MED Radiology Miranda",role:"MRI — MS Imaging",cat:"medical",lat:-34.0340,lng:151.1052,location:"533 Kingsway Miranda NSW 2228",phone:"02 9525 6055",freq:"Bi-annual"},
+    {id:14,name:"Calm Bar",role:"Cold Bath Therapy",cat:"wellness",lat:-33.8615,lng:151.1718,location:"Rozelle",phone:"1800 971 711",freq:"Weekly"},
+    {id:15,name:"California Nails",role:"Nails",cat:"beauty",lat:-33.8615,lng:151.2014,location:"200 Barangaroo Ave",phone:"",freq:"Every 3 weeks"},
   ],
   compass:[
     {num:"01",name:"KnightsForFreedom",tagline:"Freedom is a state of mind before it is a state of being.",status:"building"},
@@ -834,6 +869,10 @@ function switchTab(name,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
   el.classList.add('active');
+  if(name==='sammap'){
+    // Leaflet needs an explicit relayout once its container is visible
+    setTimeout(()=>{if(typeof L!=='undefined'){if(!_samMap)buildSamMap();else _samMap.invalidateSize()}},80);
+  }
 }
 
 // ═══════════════════════
@@ -844,20 +883,156 @@ async function loadState(){const saved=await store.get('ccstate6');if(saved)STAT
 async function saveState(){await store.set('ccstate6',STATE)}
 
 // ═══════════════════════
-// DB WRITE HELPERS — v6
+// DB WRITE HELPERS — v6 + v1.4.0
 // ═══════════════════════
 async function writeActionToDB(action){
   try{
     const ul=action.urgency==='red'?'🔴 URGENT':action.urgency==='amber'?'🟡 THIS WEEK':'🔵 PLANNED';
     const dt=new Date().toLocaleDateString('en-AU',{timeZone:'Australia/Sydney'});
     await fetch(DB_URL,{method:'POST',body:JSON.stringify({apiKey:DB_KEY,action:'addRow',sheet:'ACTIONS',row:[ul,dt,action.text,'','','',action.done?'DONE':'OPEN']})});
-  }catch(e){console.warn('DB write failed:',e)}
+    return true;
+  }catch(e){console.warn('DB write failed:',e);return false}
 }
 async function markDeletedInDB(text){
   try{
     const dt=new Date().toLocaleDateString('en-AU',{timeZone:'Australia/Sydney'});
     await fetch(DB_URL,{method:'POST',body:JSON.stringify({apiKey:DB_KEY,action:'addRow',sheet:'ACTIONS',row:['DELETED',dt,text,'','','','DELETED']})});
   }catch(e){console.warn('DB delete failed:',e)}
+}
+// v1.4.0 — append a superseding row to FINANCIAL. Apps Script has no updateCell, so each edit
+// is a new row with EDIT marker; the sheet keeps full history. Reader logic uses last value seen.
+async function appendFinancialEdit(originalRow,colIdx,newVal){
+  try{
+    const out=[...(originalRow||['','','',''])];
+    while(out.length<4)out.push('');
+    out[colIdx]=newVal;
+    const stamp=new Date().toLocaleString('en-AU',{timeZone:'Australia/Sydney'});
+    // Add EDIT marker in Notes column so a future Apps Script change can dedupe
+    out[3]=(out[3]?out[3]+' · ':'')+`[EDIT ${stamp}]`;
+    const res=await fetch(DB_URL,{method:'POST',body:JSON.stringify({apiKey:DB_KEY,action:'addRow',sheet:'FINANCIAL',row:out})});
+    return res.ok;
+  }catch(e){console.warn('FINANCIAL write failed:',e);return false}
+}
+async function logToMasterLog(category,detail){
+  try{
+    const dt=new Date().toLocaleString('en-AU',{timeZone:'Australia/Sydney'});
+    await fetch(DB_URL,{method:'POST',body:JSON.stringify({apiKey:DB_KEY,action:'log',sheet:'MASTER_LOG',row:[dt,category,detail]})});
+    return true;
+  }catch(e){console.warn('MASTER_LOG write failed:',e);return false}
+}
+
+// ═══════════════════════
+// INLINE EDIT — v1.4.0 (Item 4)
+// ═══════════════════════
+const EDIT_MODE={actions:false,threads:false,financial:false};
+
+function toggleEditMode(tab){
+  EDIT_MODE[tab]=!EDIT_MODE[tab];
+  const panel=document.getElementById('panel-'+tab);
+  const btn=document.getElementById('edit-toggle-'+tab);
+  if(EDIT_MODE[tab]){
+    panel.classList.add('edit-mode');
+    btn.classList.add('active');
+    btn.querySelector('.lbl').textContent='DONE';
+    attachEditHandlers(tab);
+  } else {
+    panel.classList.remove('edit-mode');
+    btn.classList.remove('active');
+    btn.querySelector('.lbl').textContent='EDIT';
+  }
+}
+
+function attachEditHandlers(tab){
+  const panel=document.getElementById('panel-'+tab);
+  if(!panel)return;
+  panel.querySelectorAll('.editable').forEach(el=>{
+    if(el.dataset._wired==='1')return;
+    el.dataset._wired='1';
+    el.addEventListener('click',function(e){
+      if(!EDIT_MODE[tab])return;
+      if(el.querySelector('input'))return;
+      e.stopPropagation();
+      startInlineEdit(tab,el);
+    });
+  });
+}
+
+function startInlineEdit(tab,el){
+  const oldText=el.textContent;
+  const field=el.dataset.field||'';
+  const input=document.createElement('input');
+  input.type='text';
+  input.value=oldText;
+  input.className='editing-input';
+  el.textContent='';
+  el.appendChild(input);
+  input.focus();
+  input.select();
+  let done=false;
+  const finish=async(save)=>{
+    if(done)return;done=true;
+    const newVal=input.value.trim();
+    if(!save||newVal===oldText){
+      el.textContent=oldText;
+      return;
+    }
+    el.classList.add('edit-saving');
+    el.textContent=newVal; // optimistic
+    const ok=await commitEdit(tab,field,el,oldText,newVal);
+    el.classList.remove('edit-saving');
+    if(ok){
+      el.classList.add('edit-saved-flash');
+      setTimeout(()=>el.classList.remove('edit-saved-flash'),1200);
+    } else {
+      el.textContent=oldText; // revert
+      el.classList.add('edit-error-flash');
+      setTimeout(()=>el.classList.remove('edit-error-flash'),1500);
+    }
+  };
+  input.addEventListener('blur',()=>finish(true));
+  input.addEventListener('keydown',(e)=>{
+    if(e.key==='Enter'){e.preventDefault();finish(true)}
+    else if(e.key==='Escape'){e.preventDefault();finish(false)}
+  });
+}
+
+async function commitEdit(tab,field,el,oldVal,newVal){
+  // Actions: update STATE.actions and append to ACTIONS sheet
+  if(tab==='actions'){
+    const aid=parseInt(el.dataset.actionId,10);
+    const a=STATE.actions.find(x=>x.id===aid);
+    if(!a)return false;
+    a.text=newVal;
+    await saveState();
+    return await writeActionToDB(a);
+  }
+  // Threads: update STATE.threads, log to MASTER_LOG (no THREADS sheet exists)
+  if(tab==='threads'){
+    const tid=parseInt(el.dataset.threadId,10);
+    const t=STATE.threads.find(x=>x.id===tid);
+    if(!t)return false;
+    const subField=field.split('.')[1]||'topic';
+    t[subField]=newVal;
+    t.updated=new Date().toLocaleDateString('en-AU',{timeZone:'Australia/Sydney'});
+    await saveState();
+    renderThreads(); // refresh "Last:" date
+    return await logToMasterLog('THREAD_EDIT',`${t.person} · ${subField}: ${oldVal} → ${newVal}`);
+  }
+  // Financial: append new row to FINANCIAL with updated column
+  if(tab==='financial'){
+    const rowIdx=parseInt(el.dataset.row,10);
+    const colIdx=parseInt(el.dataset.col,10);
+    if(isNaN(rowIdx)||isNaN(colIdx))return false;
+    const original=(STATE.dbSnapshot.financial||[])[rowIdx]||['','','',''];
+    const cloned=[...original];
+    while(cloned.length<4)cloned.push('');
+    cloned[colIdx]=newVal;
+    // optimistic: mutate in-memory snapshot too so the next render keeps the new value
+    STATE.dbSnapshot.financial[rowIdx]=cloned;
+    await saveState();
+    return await appendFinancialEdit(original,colIdx,newVal);
+  }
+  return false;
 }
 
 // ═══════════════════════
@@ -868,12 +1043,13 @@ function renderActions(){
     const el=document.getElementById('actions-'+u);
     const items=STATE.actions.filter(a=>a.urgency===u);
     el.innerHTML=items.map(a=>`
-      <div class="action-item ${a.urgency} ${a.done?'done':''}">
+      <div class="action-item ${a.urgency} ${a.done?'done':''}" data-action-id="${a.id}">
         <div class="action-check ${a.done?'checked':''}" onclick="toggleAction(${a.id})">${a.done?'✓':''}</div>
-        <div class="action-text">${a.text}</div>
+        <div class="action-text editable" data-field="action.text" data-action-id="${a.id}">${a.text}</div>
         <div class="action-del" onclick="deleteAction(${a.id})">×</div>
       </div>`).join('');
   });
+  if(EDIT_MODE.actions)attachEditHandlers('actions');
 }
 async function toggleAction(id){
   const a=STATE.actions.find(x=>x.id===id);
@@ -936,48 +1112,124 @@ function renderTimeline(){
 }
 
 // ═══════════════════════
-// RENDER SAMMAP
+// RENDER SAMMAP — v1.4.0 Leaflet + OpenStreetMap
 // ═══════════════════════
 let activeFilter='all';
 const CAT_COLORS={medical:'#e8585a',therapy:'#9b59b6',beauty:'#e91e8c',wellness:'#4caf50',admin:'#4a9eda'};
-const RING_R=[0,90,165,235,305];
+const SAM_HOME={lat:-33.8625,lng:151.2009,label:'Sam · Watermans Quay 6A'};
+let _samMap=null;
+const _samMarkers={};
+const _geocodeMemo={};
+
+function ccProviderIcon(p){
+  const col=CAT_COLORS[p.cat]||'#888';
+  const w=p.name.split(' ');
+  const initials=(w[0]==='Dr'||w[0]==='Prof.')
+    ? (w[0][0]+w[w.length-1][0])
+    : (w[0][0]+(w[1]?w[1][0]:''));
+  return L.divIcon({
+    className:'',
+    iconSize:[26,26],
+    iconAnchor:[13,13],
+    popupAnchor:[0,-12],
+    html:`<div class="cc-marker" style="width:26px;height:26px;background:${col}">${initials}</div>`
+  });
+}
+
+function ccHomeIcon(){
+  return L.divIcon({
+    className:'',
+    iconSize:[34,34],
+    iconAnchor:[17,17],
+    html:`<div class="cc-marker" style="width:34px;height:34px;background:rgba(196,151,62,0.95);border-color:#e8c97a;font-size:9px">SAM</div>`
+  });
+}
+
+async function geocodeAddress(addr){
+  if(!addr)return null;
+  if(_geocodeMemo[addr])return _geocodeMemo[addr];
+  try{
+    // Nominatim — 1 req/sec rate limit (OSM ToS)
+    const q=encodeURIComponent(addr+', Sydney, Australia');
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${q}`,{headers:{'Accept':'application/json'}});
+    const data=await r.json();
+    if(data&&data[0]){
+      const coords={lat:parseFloat(data[0].lat),lng:parseFloat(data[0].lon)};
+      _geocodeMemo[addr]=coords;
+      return coords;
+    }
+  }catch(e){console.warn('geocode failed',addr,e)}
+  return null;
+}
+
 function buildSamMap(){
-  const W=340,H=340,cx=W/2,cy=H/2;
-  let svg=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="max-width:100%">`;
-  svg+=`<circle cx="${cx}" cy="${cy}" r="${W/2-4}" fill="rgba(5,5,10,0.8)" stroke="rgba(196,151,62,0.08)" stroke-width="1"/>`;
-  [1,2,3,4].forEach(r=>{svg+=`<circle cx="${cx}" cy="${cy}" r="${RING_R[r]}" fill="none" stroke="rgba(196,151,62,0.12)" stroke-width="1" stroke-dasharray="4,4"/>`});
-  const rl=['Walk','Short Drive','20-40 min','45+ min'];
-  [1,2,3,4].forEach((r,i)=>{svg+=`<text x="${cx+RING_R[r]+4}" y="${cy+3}" fill="rgba(196,151,62,0.3)" font-size="7" font-family="Montserrat">${rl[i]}</text>`});
-  svg+=`<circle cx="${cx}" cy="${cy}" r="14" fill="rgba(196,151,62,0.2)" stroke="var(--gold)" stroke-width="1.5"/>`;
-  svg+=`<text x="${cx}" y="${cy+1}" text-anchor="middle" dominant-baseline="middle" fill="#e8c97a" font-size="9" font-family="Montserrat" font-weight="500">SAM</text>`;
+  if(typeof L==='undefined'){
+    document.getElementById('sammap-map').innerHTML='<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:11px">Map library loading...</div>';
+    setTimeout(buildSamMap,400);
+    return;
+  }
+  if(!_samMap){
+    _samMap=L.map('sammap-map',{zoomControl:true,scrollWheelZoom:true}).setView([SAM_HOME.lat,SAM_HOME.lng],11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      maxZoom:19,
+      attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(_samMap);
+    L.marker([SAM_HOME.lat,SAM_HOME.lng],{icon:ccHomeIcon(),title:SAM_HOME.label}).addTo(_samMap)
+      .bindPopup(`<div class="cc-popup-inner"><h4>${SAM_HOME.label}</h4><div class="cc-pop-role">Home base</div></div>`,{className:'cc-popup'});
+  }
+  // clear existing provider markers
+  Object.values(_samMarkers).forEach(m=>_samMap.removeLayer(m));
+  for(const k in _samMarkers)delete _samMarkers[k];
+
+  let count=0;
   STATE.sammap_providers.forEach(p=>{
     if(activeFilter!=='all'&&p.cat!==activeFilter)return;
-    const rad=(p.angle-90)*Math.PI/180;
-    const r=RING_R[p.ring];
-    const px=cx+r*Math.cos(rad),py=cy+r*Math.sin(rad);
-    const col=CAT_COLORS[p.cat]||'#888';
-    const w=p.name.split(' ');
-    const label=(w[0]==='Dr'||w[0]==='Prof.')?w[0]+' '+w[w.length-1]:w.length>2?w.slice(0,2).join(' '):p.name;
-    svg+=`<g class="provider-node" onclick="showProvider(${p.id})" style="cursor:pointer">`;
-    svg+=`<circle class="dot" cx="${px}" cy="${py}" r="6" fill="${col}" opacity="0.9" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>`;
-    svg+=`<text x="${px}" y="${py+14}" text-anchor="middle" fill="${col}" font-size="7.5" font-family="Montserrat" opacity="0.85">${label}</text>`;
-    svg+=`</g>`;
+    if(typeof p.lat!=='number'||typeof p.lng!=='number')return;
+    const marker=L.marker([p.lat,p.lng],{icon:ccProviderIcon(p),title:p.name}).addTo(_samMap);
+    const html=`<div>
+      <h4>${p.name}</h4>
+      <div class="cc-pop-role">${p.role||''}</div>
+      <div class="cc-pop-detail"><b>📍</b> ${p.location||''}</div>
+      ${p.phone?`<div class="cc-pop-detail"><b>📞</b> ${p.phone}</div>`:''}
+      ${p.freq?`<div class="cc-pop-detail"><b>🗓</b> ${p.freq}</div>`:''}
+    </div>`;
+    marker.bindPopup(html,{className:'cc-popup'});
+    _samMarkers[p.id]=marker;
+    count++;
   });
-  svg+=`</svg>`;
-  document.getElementById('sammap-wrap').innerHTML=svg;
+  document.getElementById('sammap-geocode-note').textContent=`${count} provider${count!==1?'s':''} shown · © OpenStreetMap contributors`;
+  // Geocode any rows lacking lat/lng (rate-limited 1 req/sec) — runs async, refreshes on completion
+  geocodeMissing();
+  setTimeout(()=>{if(_samMap)_samMap.invalidateSize()},120);
 }
-function filterMap(cat,btn){activeFilter=cat;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active-filter'));btn.classList.add('active-filter');buildSamMap()}
+
+let _geocodeRunning=false;
+async function geocodeMissing(){
+  if(_geocodeRunning)return;
+  const missing=STATE.sammap_providers.filter(p=>(typeof p.lat!=='number'||typeof p.lng!=='number')&&p.location);
+  if(missing.length===0)return;
+  _geocodeRunning=true;
+  for(const p of missing){
+    await new Promise(r=>setTimeout(r,1100)); // Nominatim 1 req/sec
+    const c=await geocodeAddress(p.location);
+    if(c){p.lat=c.lat;p.lng=c.lng}
+  }
+  _geocodeRunning=false;
+  buildSamMap();
+}
+
+function filterMap(cat,btn){
+  activeFilter=cat;
+  document.querySelectorAll('#sammap-filters .filter-btn').forEach(b=>b.classList.remove('active-filter'));
+  if(btn)btn.classList.add('active-filter');
+  buildSamMap();
+}
 function showProvider(id){
-  const p=STATE.sammap_providers.find(x=>x.id===id);if(!p)return;
-  const pop=document.getElementById('provider-popup');
-  document.getElementById('pp-name').textContent=p.name;
-  document.getElementById('pp-role').textContent=p.role;
-  document.querySelector('#pp-location span').textContent=p.location;
-  document.querySelector('#pp-phone span').textContent=p.phone||'Not on file';
-  document.querySelector('#pp-freq span').textContent=p.freq||'TBC';
-  pop.classList.add('show');
+  const p=STATE.sammap_providers.find(x=>x.id===id);if(!p||!_samMarkers[id])return;
+  _samMap.setView([p.lat,p.lng],14);
+  _samMarkers[id].openPopup();
 }
-function closePopup(){document.getElementById('provider-popup').classList.remove('show')}
+function closePopup(){if(_samMap)_samMap.closePopup()}
 
 // ═══════════════════════
 // RENDER SAMWEEK
@@ -1035,11 +1287,11 @@ function initSamWeek(){
 // ═══════════════════════
 function renderThreads(){
   document.getElementById('threads-list').innerHTML=STATE.threads.map(t=>`
-    <div class="thread-card">
+    <div class="thread-card" data-thread-id="${t.id}">
       <div class="thread-status-dot ${t.status}"></div>
       <div style="flex:1">
-        <div class="thread-person">${t.person}</div>
-        <div class="thread-topic">${t.topic}</div>
+        <div class="thread-person editable" data-field="thread.person" data-thread-id="${t.id}">${t.person}</div>
+        <div class="thread-topic editable" data-field="thread.topic" data-thread-id="${t.id}">${t.topic}</div>
         <div class="thread-updated">Last: ${t.updated}</div>
       </div>
       <span style="font-size:10px;padding:3px 8px;border-radius:10px;flex-shrink:0;
@@ -1048,51 +1300,143 @@ function renderThreads(){
         ${t.status==='urgent'?'Urgent':t.status==='resolved'?'✓ Done':'Waiting'}
       </span>
     </div>`).join('');
+  if(EDIT_MODE.threads)attachEditHandlers('threads');
 }
 
 // ═══════════════════════
-// RENDER FINANCIAL v3
+// RENDER FINANCIAL — v1.4.0 DB-driven from FINANCIAL sheet
 // ═══════════════════════
+const _fmtMoney=v=>{
+  if(v==null||v==='')return '';
+  const s=String(v).replace(/[$,\s]/g,'');
+  const n=parseFloat(s);
+  if(isNaN(n))return String(v);
+  return '$'+Math.round(n).toLocaleString('en-AU');
+};
+const _moneyToNum=v=>{
+  if(v==null)return 0;
+  const s=String(v).replace(/[~$,\s()kKmM]/g,'');
+  const n=parseFloat(s);
+  if(isNaN(n))return 0;
+  // handle k / m suffixes
+  if(/[kK]/.test(String(v)))return n*1000;
+  if(/[mM]/.test(String(v)))return n*1000000;
+  return n;
+};
+
+function parseFinancialSections(rows){
+  // Identify section banners (row[0] uppercase + dash/em-dash, rest blank) and group into sections.
+  const sections={};
+  let cur=null;
+  rows.forEach((r,idx)=>{
+    if(!r)return;
+    const a=String(r[0]||'').trim();
+    const b=String(r[1]||'').trim();
+    const c=String(r[2]||'').trim();
+    const looksBanner=a&&!b&&(a===a.toUpperCase())&&a.length>4&&!c.match(/^\$/);
+    if(looksBanner){
+      cur=a;
+      sections[cur]=[];
+      return;
+    }
+    if(cur)sections[cur].push({row:r,idx:idx});
+  });
+  return sections;
+}
+
 function renderFinancial(){
-  const income=[
-    {name:"Avantaus Salary",val:250000,max:615000,color:"var(--gold)",entity:"ANZ 5644"},
-    {name:"Commissions (100 lots)",val:150000,max:615000,color:"#e8c97a",entity:"Cross Properties"},
-    {name:"NDIS — Cross Express",val:120000,max:615000,color:"var(--blue)",entity:"GSB 51570363"},
-    {name:"Sam Consulting",val:95000,max:615000,color:"#9b59b6",entity:"Cross Properties"},
-  ];
-  document.getElementById('income-bars').innerHTML=income.map(i=>`
-    <div class="income-bar-row">
+  const rawRows=(STATE.dbSnapshot&&STATE.dbSnapshot.financial)?STATE.dbSnapshot.financial:[];
+  const sections=parseFinancialSections(rawRows);
+
+  // INCOME section — Source | Entity | Gross | Notes (with optional TOTAL row at end)
+  const incomeSection=sections['INCOME — 2026 PROJECTED']||[];
+  const incomeRows=incomeSection.filter(s=>{
+    const v=String(s.row[0]||'').trim().toUpperCase();
+    return v&&v!=='SOURCE'&&v!=='TOTAL';
+  });
+  const totalRow=incomeSection.find(s=>String(s.row[0]||'').trim().toUpperCase()==='TOTAL');
+  const totalGross=totalRow?_moneyToNum(totalRow.row[2]):incomeRows.reduce((sum,s)=>sum+_moneyToNum(s.row[2]),0);
+
+  const colorPalette=['var(--gold)','#e8c97a','var(--blue)','#9b59b6','var(--green)','var(--amber)'];
+  const incomeBars=incomeRows.map((s,i)=>{
+    const name=s.row[0]||'';
+    const entity=s.row[1]||'';
+    const val=_moneyToNum(s.row[2]);
+    return {name,entity,val,color:colorPalette[i%colorPalette.length],rowIdx:s.idx};
+  });
+  document.getElementById('income-bars').innerHTML=incomeBars.length?incomeBars.map(i=>`
+    <div class="income-bar-row" data-row-idx="${i.rowIdx}">
       <div class="income-bar-label">
-        <span class="income-bar-name">${i.name} <span style="font-size:9px;color:var(--text-muted)">· ${i.entity}</span></span>
-        <span class="income-bar-val">$${(i.val/1000).toFixed(0)}k</span>
+        <span class="income-bar-name"><span class="editable" data-field="income.name" data-row="${i.rowIdx}" data-col="0">${i.name}</span> <span style="font-size:9px;color:var(--text-muted)">· <span class="editable" data-field="income.entity" data-row="${i.rowIdx}" data-col="1">${i.entity}</span></span></span>
+        <span class="income-bar-val editable" data-field="income.gross" data-row="${i.rowIdx}" data-col="2">${_fmtMoney(i.val)}</span>
       </div>
       <div class="income-bar-track">
-        <div class="income-bar-fill" style="width:${(i.val/i.max*100).toFixed(1)}%;background:${i.color}"></div>
+        <div class="income-bar-fill" style="width:${totalGross?(i.val/totalGross*100).toFixed(1):0}%;background:${i.color}"></div>
       </div>
-    </div>`).join('');
+    </div>`).join(''):'<div style="font-size:11px;color:var(--text-muted);padding:8px">No income data yet — hit ⟳ SYNC to load.</div>';
 
-  const samDebts=[
-    {label:"ATO",amount:"~$40k",status:"urgent"},
-    {label:"Credit Corp",amount:"TBC",status:"waiting"},
-    {label:"Penrith Christian School",amount:"TBC",status:"waiting"},
-    {label:"ARMA",amount:"TBC",status:"waiting"},
-    {label:"Child Support",amount:"TBC",status:"waiting"},
-    {label:"AAMI / Tolls",amount:"TBC",status:"waiting"},
-  ];
-  document.getElementById('sam-debt-list').innerHTML=samDebts.map(d=>`
-    <div class="scott-item">
+  // Update total gross display
+  const totalDisplay=document.querySelector('#panel-financial .fin-card + .fin-card').parentElement.nextElementSibling; // GIC ticker — skip
+  // Update the "Total Projected Gross" card
+  const totEl=document.querySelector('#panel-financial [data-cc-total]');
+  if(totEl)totEl.textContent=totalGross?'$'+Math.round(totalGross/1000)+'k':'$—';
+
+  // NET POSITION — extract CPFT + ATO
+  const netSection=sections['NET POSITION (ESTIMATED)']||[];
+  const find=(label)=>{
+    const m=netSection.find(s=>String(s.row[0]||'').toLowerCase().includes(label));
+    return m?{val:m.row[2],idx:m.idx}:null;
+  };
+  const cpft=find('cpft cash')||find('cpft');
+  const ato=find('ato debt');
+
+  // Update top 2 cards (CPFT + ATO)
+  const cpftEl=document.querySelector('#panel-financial [data-cc-cpft]');
+  if(cpftEl){
+    cpftEl.innerHTML=cpft?`<span class="editable" data-field="cpft" data-row="${cpft.idx}" data-col="2">${_fmtMoney(cpft.val)}</span>`:'$—';
+  }
+  const atoEl=document.querySelector('#panel-financial [data-cc-ato]');
+  if(atoEl){
+    atoEl.innerHTML=ato?`<span class="editable" data-field="ato" data-row="${ato.idx}" data-col="2">~${_fmtMoney(ato.val)}</span>`:'~$—';
+  }
+
+  // CPFT vs ATO bar — recompute width
+  const cpftN=cpft?_moneyToNum(cpft.val):457000;
+  const atoN=ato?_moneyToNum(ato.val):500000;
+  const ratio=atoN?Math.min(100,Math.max(0,(cpftN/atoN)*100)):91;
+  const shortfall=atoN-cpftN;
+  const netBarFill=document.querySelector('#panel-financial .net-bar-fill');
+  if(netBarFill)netBarFill.style.width=ratio.toFixed(1)+'%';
+  const netLabels=document.querySelector('#panel-financial .net-bar-labels');
+  if(netLabels)netLabels.innerHTML=`<span>CPFT ${_fmtMoney(cpftN)}</span><span style="color:var(--amber)">ATO ~${_fmtMoney(atoN)}</span>`;
+  const netNote=document.querySelector('#panel-financial .net-pos-bar div[style*="margin-top:6px"]');
+  if(netNote)netNote.textContent=shortfall>0?`Shortfall ~${_fmtMoney(shortfall)} — negotiation with Scott in progress`:`Surplus ~${_fmtMoney(-shortfall)} after ATO`;
+
+  // SAM PERSONAL DEBT — Creditor | Amount | Notes
+  const samDebtSection=sections['SAM PERSONAL DEBT — ~$86K TOTAL']||sections['SAM PERSONAL DEBT — ~$86k TOTAL']||[];
+  const debtRows=samDebtSection.filter(s=>{
+    const v=String(s.row[0]||'').trim().toUpperCase();
+    return v&&v!=='CREDITOR'&&!v.startsWith('TOTAL');
+  });
+  document.getElementById('sam-debt-list').innerHTML=debtRows.length?debtRows.map(s=>{
+    const label=s.row[0]||'';
+    const amount=String(s.row[1]||'TBC');
+    const isUrgent=amount.toLowerCase().includes('k')||/\d/.test(amount);
+    return `<div class="scott-item" data-row-idx="${s.idx}">
       <div class="scott-num" style="background:rgba(229,69,69,0.1);color:var(--red)">$</div>
       <div>
-        <div class="scott-text">${d.label}</div>
-        <div class="scott-detail">${d.amount}</div>
+        <div class="scott-text editable" data-field="debt.label" data-row="${s.idx}" data-col="0">${label}</div>
+        <div class="scott-detail editable" data-field="debt.amount" data-row="${s.idx}" data-col="1">${amount}</div>
       </div>
       <span style="font-size:10px;padding:2px 7px;border-radius:8px;
-        background:${d.status==='urgent'?'rgba(229,69,69,0.12)':'rgba(224,154,58,0.08)'};
-        color:${d.status==='urgent'?'var(--red)':'var(--amber)'}">
-        ${d.status==='urgent'?'Urgent':'Confirm'}
+        background:${isUrgent?'rgba(229,69,69,0.12)':'rgba(224,154,58,0.08)'};
+        color:${isUrgent?'var(--red)':'var(--amber)'}">
+        ${isUrgent?'Urgent':'Confirm'}
       </span>
-    </div>`).join('');
+    </div>`;
+  }).join(''):'<div style="font-size:11px;color:var(--text-muted);padding:8px">No debt data yet — hit ⟳ SYNC to load.</div>';
 
+  // Scott deep dive — keep static workflow notes (not DB-driven)
   const scottItems=[
     {n:1,text:"Divorce debt — ~$400k to parents",detail:"Finalised ~Oct 2016. Locate divorce paperwork. Confirm outstanding balance."},
     {n:2,text:"Mum loan — ~$250k",detail:"Borrowed 2017 or 2018. Locate bank statement or loan agreement."},
@@ -1106,6 +1450,9 @@ function renderFinancial(){
       <div class="scott-num">${i.n}</div>
       <div><div class="scott-text">${i.text}</div><div class="scott-detail">${i.detail}</div></div>
     </div>`).join('');
+
+  // Refresh edit handlers for new DOM
+  if(EDIT_MODE.financial)attachEditHandlers('financial');
 }
 
 // ═══════════════════════
